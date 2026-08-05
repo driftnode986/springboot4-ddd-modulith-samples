@@ -1,3 +1,3 @@
 @org.springframework.modulith.ApplicationModule(
-        allowedDependencies = { "order :: spi" })
+        allowedDependencies = {})
 package com.example.shop.inventory;

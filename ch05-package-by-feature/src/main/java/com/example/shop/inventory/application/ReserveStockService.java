@@ -1,13 +1,14 @@
 package com.example.shop.inventory.application;
 
-import com.example.shop.order.spi.OrderPlaced;
+import com.example.shop.inventory.spi.StockReservation;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ReserveStockService {
+class ReserveStockService implements StockReservation {
 
-    public void on(OrderPlaced event) {
-        // 第14章でドメインイベントとして受け取る形に置き換えます。
-        // ここでは order の公開面だけを参照できることの確認に使います。
+    @Override
+    public void reserve(String sku, int quantity) {
+        // 在庫の引き当ては第9章で実装します。
+        // ここでは order から見える窓口が spi だけであることの確認に使います。
     }
 }
