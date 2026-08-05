@@ -13,12 +13,12 @@ CREATE TABLE orders (
 );
 
 CREATE TABLE order_lines (
-    id           BIGSERIAL      NOT NULL,
-    order_id     VARCHAR(36)    NOT NULL,
-    product_id   VARCHAR(36)    NOT NULL,
-    quantity     INTEGER        NOT NULL,
-    unit_amount  NUMERIC(12, 2) NOT NULL,
-    unit_currency VARCHAR(3)    NOT NULL,
+    id            BIGSERIAL      NOT NULL,
+    order_id      VARCHAR(36)    NOT NULL,
+    product_id    VARCHAR(36)    NOT NULL,
+    quantity      INTEGER        NOT NULL,
+    unit_amount   NUMERIC(12, 2) NOT NULL,
+    unit_currency VARCHAR(3)     NOT NULL,
     CONSTRAINT pk_order_lines PRIMARY KEY (id),
     CONSTRAINT fk_order_lines_order FOREIGN KEY (order_id) REFERENCES orders (id)
 );

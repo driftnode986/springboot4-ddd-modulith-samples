@@ -11,6 +11,7 @@ import com.example.shop.order.domain.OrderRepository;
 import com.example.shop.order.domain.ProductId;
 import com.example.shop.order.domain.Quantity;
 import java.time.Instant;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,7 +36,8 @@ class OptimisticLockTest {
     private OrderJpaRepository jpa;
 
     @Test
-    void 同じ注文を2人が同時に更新すると後から書いた方が失敗する() {
+    @DisplayName("同じ注文を2人が同時に更新すると後から書いた方が失敗する")
+    void concurrentUpdateFailsForSecondWriter() {
         OrderId id = new OrderId("ORD-400");
         Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
         order.addLine(new ProductId("P-1"), new Quantity(1), Money.yen(1000));

@@ -15,6 +15,7 @@ import jakarta.persistence.PersistenceContext;
 import java.time.Instant;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +50,8 @@ class NPlusOneProbeTest {
 
     @Test
     @Transactional
-    void fetch_join_を使わないと注文と明細で問い合わせが2本になる() {
+    @DisplayName("fetch_join_を使わないと注文と明細で問い合わせが2本になる")
+    void withoutFetchJoinTwoStatementsAreIssued() {
         OrderId id = new OrderId("ORD-300");
         Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
         order.addLine(new ProductId("P-1"), new Quantity(1), Money.yen(1000));

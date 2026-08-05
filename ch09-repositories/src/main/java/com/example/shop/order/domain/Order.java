@@ -20,12 +20,16 @@ public class Order {
     private OrderState state;
 
     private Order(OrderId id, CustomerId customerId, Instant acceptedAt) {
+        this(id, customerId, new OrderState.Accepted(acceptedAt));
+    }
+
+    private Order(OrderId id, CustomerId customerId, OrderState state) {
         if (id == null || customerId == null) {
             throw new IllegalArgumentException("注文の識別子と顧客の識別子は必須です");
         }
         this.id = id;
         this.customerId = customerId;
-        this.state = new OrderState.Accepted(acceptedAt);
+        this.state = state;
     }
 
     /** 注文を受け付ける。業務として新しい注文が生まれる経路はこれだけ。 */
@@ -36,10 +40,16 @@ public class Order {
     /**
      * 保存済みの注文を組み立て直す。業務上の出来事ではなく、
      * 保存したものを読み戻すためだけに使う。
+     * 受付や明細の追加を業務の経路でやり直すと、規則を変えたあとに
+     * 既存のデータが読めなくなるため、検査を通さずに組み立てる。
      */
-    public static Order restore(OrderId id, CustomerId customerId, OrderState state) {
-        Order order = new Order(id, customerId, Instant.EPOCH);
-        order.state = state;
+    public static Order restore(
+            OrderId id, CustomerId customerId, OrderState state, List<OrderLine> lines) {
+        if (id == null || customerId == null || state == null || lines == null) {
+            throw new IllegalArgumentException("読み戻しには識別子・顧客・状態・明細が必要です");
+        }
+        Order order = new Order(id, customerId, state);
+        order.lines.addAll(lines);
         return order;
     }
 

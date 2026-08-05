@@ -12,6 +12,7 @@ import com.example.shop.order.domain.Quantity;
 import java.time.Instant;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,7 +40,8 @@ class OrderFetchSqlCountTest {
     private EntityManagerFactory entityManagerFactory;
 
     @Test
-    void 明細付きの注文を取り出すと発行される問い合わせは1本() {
+    @DisplayName("明細付きの注文を取り出すと発行される問い合わせは1本")
+    void aggregateIsLoadedInOneStatement() {
         OrderId id = new OrderId("ORD-200");
         Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
         order.addLine(new ProductId("P-1"), new Quantity(1), Money.yen(1000));

@@ -11,6 +11,7 @@ import com.example.shop.order.domain.ProductId;
 import com.example.shop.order.domain.Quantity;
 import com.example.shop.order.domain.ReservationId;
 import java.util.Currency;
+import java.util.List;
 
 /**
  * ドメインの Order と表の形の OrderEntity を相互に変換する。
@@ -69,17 +70,19 @@ final class OrderMapper {
     }
 
     static Order toDomain(OrderEntity entity) {
-        Order order = Order.restore(
+        List<OrderLine> lines = entity.getLines().stream()
+                .map(line -> new OrderLine(
+                        new ProductId(line.getProductId()),
+                        new Quantity(line.getQuantity()),
+                        new Money(
+                                line.getUnitAmount(),
+                                Currency.getInstance(line.getUnitCurrency()))))
+                .toList();
+        return Order.restore(
                 new OrderId(entity.getId()),
                 new CustomerId(entity.getCustomerId()),
-                toState(entity));
-        for (OrderLineEntity line : entity.getLines()) {
-            order.addLine(
-                    new ProductId(line.getProductId()),
-                    new Quantity(line.getQuantity()),
-                    new Money(line.getUnitAmount(), Currency.getInstance(line.getUnitCurrency())));
-        }
-        return order;
+                toState(entity),
+                lines);
     }
 
     /** 判別のための名前から、もとの状態を組み立て直す。 */
