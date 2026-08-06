@@ -1,0 +1,19 @@
+spring:
+  flyway:
+    locations:
+      - classpath:db/migration/order
+      - classpath:db/migration/inventory
+      - classpath:db/migration/events
+  modulith:
+    events:
+      # 起動し直したときに、未完了のイベントを配り直す。既定は無効。
+      republish-outstanding-events-on-restart: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  mvc:
+    apiversion:
+      use:
+        header: X-API-Version
+      required: true
