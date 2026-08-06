@@ -2,11 +2,13 @@ package com.example.shop.order.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import com.example.shop.order.domain.OrderId;
 import com.example.shop.order.domain.OrderRepository;
 import com.example.shop.shipping.spi.ShipmentArrangement;
-import com.example.shop.shipping.spi.ShipmentId;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,9 +47,8 @@ class DirectCallRollbackTest {
     @DisplayName("直接呼び出した先が失敗すると、発行元の注文も残らない")
     void publisherIsRolledBackWhenCalleeFails() {
         // 手配された注文の識別子を控えてから失敗させる。
-        List<String> attempted = new java.util.ArrayList<>();
-        org.mockito.Mockito.when(shipments.arrange(org.mockito.ArgumentMatchers.anyString(),
-                        org.mockito.ArgumentMatchers.anyString()))
+        List<String> attempted = new ArrayList<>();
+        when(shipments.arrange(anyString(), anyString()))
                 .thenAnswer(invocation -> {
                     attempted.add(invocation.getArgument(0));
                     throw new IllegalStateException("出荷の手配に失敗しました");
