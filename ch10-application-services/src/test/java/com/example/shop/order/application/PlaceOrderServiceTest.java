@@ -12,7 +12,9 @@ import com.example.shop.order.domain.OrderState;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -71,7 +73,7 @@ class PlaceOrderServiceTest {
     /** 保存が呼ばれた回数まで見たいので、第9章のインメモリ実装に数えるだけの機能を足した。 */
     static class RecordingOrderRepository implements OrderRepository {
 
-        private final java.util.Map<OrderId, Order> store = new java.util.HashMap<>();
+        private final Map<OrderId, Order> store = new HashMap<>();
         private int saveCount;
 
         @Override

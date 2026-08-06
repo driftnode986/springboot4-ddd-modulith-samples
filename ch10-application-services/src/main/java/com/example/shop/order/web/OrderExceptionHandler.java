@@ -21,6 +21,6 @@ public class OrderExceptionHandler {
     /** 形は整っているが、業務の規則で受け付けられない。 */
     @ExceptionHandler(IllegalStateException.class)
     ProblemDetail handleRuleViolation(IllegalStateException e) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, e.getMessage());
     }
 }
