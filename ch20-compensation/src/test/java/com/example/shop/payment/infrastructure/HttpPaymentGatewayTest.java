@@ -2,7 +2,7 @@ package com.example.shop.payment.infrastructure;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.shop.payment.domain.ChargeResult;
 import com.example.shop.payment.domain.PaymentGateway;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,13 +27,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * 同じ請求を二度送っても、課金が 1 回で済むことを確かめる。
+ * 実際に HTTP を出して、相手の応答が支払いの語彙へ翻訳されることを確かめる。
  *
- * <p>相手役の WireMock は、冪等キーごとに一度だけ課金を記録する。 本物の決済代行会社が約束していることを、こちらで真似したものになる。
+ * <p>相手役は WireMock が務める。決済代行会社に本当につなぐわけではないが、 通信そのものは本物なので、遅延や失敗をこちらから作れる。
  */
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
-class IdempotentChargeTest {
+class HttpPaymentGatewayTest {
 
     @Container
     @ServiceConnection
@@ -46,6 +45,7 @@ class IdempotentChargeTest {
 
     @BeforeAll
     static void startStubServer() {
+        // 0 を渡すと空いているポートが選ばれる。固定すると他のテストとぶつかる。
         wireMock = new WireMockServer(0);
         wireMock.start();
     }
@@ -57,8 +57,12 @@ class IdempotentChargeTest {
 
     @DynamicPropertySource
     static void paymentApiUrl(DynamicPropertyRegistry registry) {
+        // 起動してからでないとポートが決まらないので、ここで設定に流し込む。
         registry.add("spring.http.serviceclient.payment.base-url", () -> wireMock.baseUrl());
+        // WireMock が同梱する Jetty は、JDK 標準のクライアントと相性が悪く
+        // 応答の途中で切られたように見える。ここでは素朴なクライアントに切り替える。
         registry.add("spring.http.clients.imperative.factory", () -> "simple");
+        // 応答を待ち続けないよう、待ち時間の上限を決めておく。
         registry.add("spring.http.clients.connect-timeout", () -> "1s");
         registry.add("spring.http.clients.read-timeout", () -> "300ms");
     }
@@ -69,103 +73,94 @@ class IdempotentChargeTest {
     }
 
     @Test
-    @DisplayName("同じ注文を二度請求しても、相手には同じ冪等キーが届く")
-    void sendsSameKeyForSameOrder() {
+    @DisplayName("相手が succeeded を返したら、支払いは成立として扱う")
+    void translatesSucceededToSettled() {
         wireMock.stubFor(
                 post(urlEqualTo("/v1/charges"))
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
                                         .withHeader("Content-Type", "application/json")
-                                        .withBody("""
+                                        .withBody(
+                                                """
                                                 {"id":"ch_1","status":"succeeded"}
                                                 """)));
 
         UUID orderId = UUID.randomUUID();
-        gateway.charge(orderId, 12_000);
-        gateway.charge(orderId, 12_000);
+        ChargeResult result = gateway.charge(orderId, 12_000);
 
-        // 2 回とも同じキーで届いていること。相手はこれを見て 1 回分と判断できる。
+        assertThat(result).isEqualTo(ChargeResult.SETTLED);
+
+        // 相手が決めた項目名で送れていることも確かめておく。
         wireMock.verify(
-                2,
                 postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(orderId.toString())));
+                        .withHeader("Content-Type", equalTo("application/json"))
+                        .withRequestBody(
+                                equalToJson(
+                                        """
+                                        {"reference":"%s","amount":12000,"currency":"JPY"}
+                                        """
+                                                .formatted(orderId))));
     }
 
     @Test
-    @DisplayName("注文が違えば、冪等キーも違う")
-    void sendsDifferentKeysForDifferentOrders() {
+    @DisplayName("相手が declined を返したら、与信が通らなかったとして扱う")
+    void translatesDeclinedToDeclined() {
         wireMock.stubFor(
                 post(urlEqualTo("/v1/charges"))
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
                                         .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_1","status":"succeeded"}
+                                        .withBody(
+                                                """
+                                                {"id":"ch_2","status":"declined"}
                                                 """)));
 
-        UUID first = UUID.randomUUID();
-        UUID second = UUID.randomUUID();
-        gateway.charge(first, 12_000);
-        gateway.charge(second, 12_000);
-
-        wireMock.verify(
-                1,
-                postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(first.toString())));
-        wireMock.verify(
-                1,
-                postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(second.toString())));
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.DECLINED);
     }
 
     @Test
-    @DisplayName("応答が届かなくても、送り直しで結果を取り戻し、課金は 1 回で済む")
-    void chargesOnceEvenWhenResponseIsLost() {
-        UUID orderId = UUID.randomUUID();
-        String key = orderId.toString();
+    @DisplayName("相手が 500 を返したら、結果は確定していないものとして扱う")
+    void treatsServerErrorAsUnknown() {
+        wireMock.stubFor(post(urlEqualTo("/v1/charges")).willReturn(aResponse().withStatus(500)));
 
-        // 一度目：課金は済むが、応答が待ち時間に間に合わない。
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
+    }
+
+    @Test
+    @DisplayName("相手が時間内に応答しなかったら、結果は確定していないものとして扱う")
+    void treatsTimeoutAsUnknown() {
         wireMock.stubFor(
                 post(urlEqualTo("/v1/charges"))
-                        .inScenario("lost-response")
-                        .whenScenarioStateIs(Scenario.STARTED)
-                        .withHeader("Idempotency-Key", equalTo(key))
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
                                         .withHeader("Content-Type", "application/json")
                                         .withBody("""
-                                                {"id":"ch_9","status":"succeeded"}
+                                                {"id":"ch_4","status":"succeeded"}
                                                 """)
-                                        .withFixedDelay(2_000))
-                        .willSetStateTo("charged"));
+                                        // 待ち時間の上限より長く、応答を送り始めるまで待たせる。
+                                        .withFixedDelay(2_000)));
 
-        // 二度目：相手は同じキーを覚えていて、課金し直さずに一度目の結果を返す。
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
+    }
+
+    @Test
+    @DisplayName("相手が知らない状態を返したら、成立とは見なさない")
+    void treatsUnknownStatusAsUnknown() {
         wireMock.stubFor(
                 post(urlEqualTo("/v1/charges"))
-                        .inScenario("lost-response")
-                        .whenScenarioStateIs("charged")
-                        .withHeader("Idempotency-Key", equalTo(key))
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
                                         .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_9","status":"succeeded"}
+                                        .withBody(
+                                                """
+                                                {"id":"ch_3","status":"processing"}
                                                 """)));
 
-        // 一度目の応答は待ち時間に間に合わないが、送り直しが自動で働く。
-        // 二度目は同じキーで届くので、相手は課金し直さず一度目の結果を返す。
-        assertThat(gateway.charge(orderId, 12_000)).isEqualTo(ChargeResult.SETTLED);
-
-        // 相手が受け取った請求は 2 通。ただし課金されたのは 1 回だけで、
-        // 二度目は一度目の結果を読み出しただけになる（ch_9 が同じことがその証拠）。
-        wireMock.verify(
-                2,
-                postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(key))
-                        .withRequestBody(matchingJsonPath("$.reference", equalTo(key))));
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
     }
 }
