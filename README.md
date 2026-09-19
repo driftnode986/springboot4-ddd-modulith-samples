@@ -6,6 +6,8 @@ Spring Boot 4.1 と Spring Modulith 2.1 で、注文・在庫・支払い・カ�
 別々のモジュールに分けた EC アプリケーションを、1つのプロセスとして組み立てます。
 モジュールの境界をテストで守り、崩れたら CI で落とすところまでを扱います。
 
+Kindle 版: [Spring Boot 4で始めるドメイン駆動設計 実装入門](https://www.amazon.co.jp/dp/B0HDH4SJST)
+
 ## 動かしてみる
 
 必要なのは **Java 21** と **Docker** の2つです。Gradle は同梱の wrapper を使うので、
