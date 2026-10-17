@@ -15,8 +15,10 @@ import org.junit.jupiter.api.Test;
  */
 class UnguardedReleaseProbeTest {
 
+    // #region double-release
     @Test
-    @DisplayName("守りが無ければ、戻しを 2 回実行すると在庫が実際より増える")
+    @DisplayName("守りが無ければ、"
+            + "戻しを 2 回実行すると在庫が実際より増える")
     void doubleReleaseInflatesQuantity() {
         Stock stock = new Stock("P-1", 10);
         stock.reserve(3);
@@ -26,9 +28,12 @@ class UnguardedReleaseProbeTest {
 
         assertThat(stock.quantity()).isEqualTo(13);
     }
+    // #endregion
 
+    // #region double-reserve
     @Test
-    @DisplayName("引き当ては 2 回実行しても、手元の数を超えられないので拒まれる")
+    @DisplayName("引き当ては 2 回実行しても、"
+            + "手元の数を超えられないので拒まれる")
     void doubleReserveIsRejectedByTheUpperBound() {
         Stock stock = new Stock("P-1", 5);
         stock.reserve(3);
@@ -37,4 +42,5 @@ class UnguardedReleaseProbeTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThat(stock.quantity()).isEqualTo(2);
     }
+    // #endregion
 }

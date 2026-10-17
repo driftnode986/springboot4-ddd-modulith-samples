@@ -11,7 +11,12 @@ import java.util.List;
  * <p>eventId は {@link com.example.shop.order.spi.OrderPlaced} と同じく、この発表そのものの
  * 識別子で、注文の識別子とは別物。受け取る側が二度戻していないかを判断するために使う。
  */
-public record PaymentFailed(String eventId, String orderId, List<Item> items, String reason) {
+// #region payment-failed
+public record PaymentFailed(
+        String eventId,
+        String orderId,
+        List<Item> items,
+        String reason) {
 
     public PaymentFailed {
         items = List.copyOf(items);
@@ -21,3 +26,4 @@ public record PaymentFailed(String eventId, String orderId, List<Item> items, St
     public record Item(String productId, int quantity) {
     }
 }
+// #endregion

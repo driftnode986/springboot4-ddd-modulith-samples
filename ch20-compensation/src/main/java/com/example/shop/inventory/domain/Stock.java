@@ -25,8 +25,10 @@ public class Stock {
         this.quantity -= amount;
     }
 
+    // #region release
     /** 引き当てを取り消して手元に戻す。 */
     public void release(int amount) {
         this.quantity += amount;
     }
+    // #endregion
 }

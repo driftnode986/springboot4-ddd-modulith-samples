@@ -27,6 +27,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /** 支払いが成立しなかったときに、引き当てた在庫が戻るまでを通しで確かめる。 */
+// #region scenario-head
 @SpringBootTest
 @EnableScenarios
 @Testcontainers(disabledWithoutDocker = true)
@@ -34,18 +35,25 @@ class CompensationScenarioTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
-    /** 外部の決済サービスには出ない。必ず断られる相手として振る舞わせる。 */
+    /**
+     * 外部の決済サービスには出ない。
+     * 必ず断られる相手として振る舞わせる。
+     */
     @TestConfiguration
     static class DecliningGateway {
         @Bean
         @Primary
         PaymentGateway declining() {
-            return new StubPaymentGateway(ChargeResult.DECLINED);
+            return new StubPaymentGateway(
+                    ChargeResult.DECLINED);
         }
     }
+    // #endregion
 
+    // #region scenario-fields
     @Autowired private PlaceOrderService placeOrder;
     @Autowired private StockRepository stocks;
     @Autowired private JdbcTemplate jdbc;
@@ -54,35 +62,58 @@ class CompensationScenarioTest {
 
     @BeforeEach
     void setUp() {
-        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
         jdbc.update(
-                "INSERT INTO inventory.stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
+                "INSERT INTO inventory.stocks"
+                        + " (sku, quantity, version)"
+                        + " VALUES (?, ?, 0)",
+                sku, 10);
     }
+    // #endregion
 
+    // #region command
     private PlaceOrderCommand command() {
         return new PlaceOrderCommand(
-                "CUS-1", "東京都千代田区1-1", List.of(new PlaceOrderCommand.Line(sku, 3, 1200L)));
+                "CUS-1",
+                "東京都千代田区1-1",
+                List.of(new PlaceOrderCommand.Line(sku, 3, 1200L)));
     }
+    // #endregion
 
+    // #region scenario-reserve
     @Test
-    @DisplayName("支払いが断られると、引き当てた在庫が戻るまで待って確かめられる")
+    @DisplayName("支払いが断られると、"
+            + "引き当てた在庫が戻るまで待って確かめられる")
     void releasesStockEventually(Scenario scenario) {
         OrderId orderId = placeOrder.place(command());
 
-        // 引き当てが終わるまで待つ。この時点で在庫は別のトランザクションで確定している。
+        // 引き当てが終わるまで待つ。
+        // この時点で在庫は別のトランザクションで確定している。
         scenario.stimulate(() -> {})
                 .andWaitForStateChange(
-                        () -> stocks.findBySku(sku).orElseThrow().quantity(), q -> q == 7)
-                .andVerify(quantity -> assertThat(quantity).isEqualTo(7));
+                        () -> stocks.findBySku(sku)
+                                .orElseThrow().quantity(),
+                        q -> q == 7)
+                .andVerify(quantity ->
+                        assertThat(quantity).isEqualTo(7));
+    // #endregion
 
+    // #region scenario-release
         scenario.stimulate(() -> placeOrder.requestPayment(orderId))
                 .andWaitForEventOfType(PaymentFailed.class)
-                .toArriveAndVerify(
-                        event -> assertThat(event.items()).extracting("productId").containsExactly(sku));
+                .toArriveAndVerify(event ->
+                        assertThat(event.items())
+                                .extracting("productId")
+                                .containsExactly(sku));
 
         scenario.stimulate(() -> {})
                 .andWaitForStateChange(
-                        () -> stocks.findBySku(sku).orElseThrow().quantity(), q -> q == 10)
-                .andVerify(quantity -> assertThat(quantity).isEqualTo(10));
+                        () -> stocks.findBySku(sku)
+                                .orElseThrow().quantity(),
+                        q -> q == 10)
+                .andVerify(quantity ->
+                        assertThat(quantity).isEqualTo(10));
     }
+    // #endregion
 }
