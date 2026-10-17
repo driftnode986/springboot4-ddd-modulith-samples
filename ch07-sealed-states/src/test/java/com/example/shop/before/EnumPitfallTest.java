@@ -27,9 +27,8 @@ class EnumPitfallTest {
     @Test
     @DisplayName("読んだ値を使うと離れた場所で落ちる")
     void 読んだ値を使うと離れた場所で落ちる() {
-        OrderWithEnum order = new OrderWithEnum();
-
-        assertThatThrownBy(() -> order.paymentId().length())
-                .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> OrderWithEnumDemo.main(new String[0]))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("String.length()");
     }
 }

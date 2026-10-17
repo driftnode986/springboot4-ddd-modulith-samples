@@ -1,0 +1,5 @@
+src/main/java/com/example/shop/order/domain/ProbeCancelConfirmed.java:21: エラー: 不適合な型: ConfirmedをCancellableStateに変換できません:
+        cancelOrder(confirmed);
+                    ^
+ノート: 一部のメッセージは簡略化されています。-Xdiags:verboseで再コンパイルして完全な出力を取得してください
+エラー1個

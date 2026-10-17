@@ -35,17 +35,19 @@ class CancellableStateTest {
         assertThat(cancelled.reason()).isEqualTo("顧客都合");
     }
 
+    // #region confirmed
     @Test
     @DisplayName("確定済はキャンセルできる状態として扱えない")
     void 確定済はキャンセルできる状態として扱えない() {
-        Confirmed confirmed =
-                new Accepted(T0)
-                        .reserve(new ReservationId("R-1"))
-                        .pay(new PaymentId("PAY-1"))
-                        .confirm(T0.plusSeconds(60));
+        Confirmed confirmed = new Accepted(T0)
+                .reserve(new ReservationId("R-1"))
+                .pay(new PaymentId("PAY-1"))
+                .confirm(T0.plusSeconds(60));
 
-        assertThat(confirmed).isNotInstanceOf(CancellableState.class);
+        assertThat(confirmed)
+                .isNotInstanceOf(CancellableState.class);
     }
+    // #endregion
 
     @Test
     @DisplayName("引当済はキャンセルできる状態として扱える")

@@ -15,35 +15,47 @@ class OrderStateTest {
 
     private static final Instant T0 = Instant.parse("2026-08-06T10:00:00Z");
 
+    // #region reserve
     @Test
     @DisplayName("受付済からは引当済に進める")
     void 受付済からは引当済に進める() {
         Accepted accepted = new Accepted(T0);
 
-        Reserved reserved = accepted.reserve(new ReservationId("R-1"));
+        Reserved reserved =
+                accepted.reserve(new ReservationId("R-1"));
 
-        assertThat(reserved.reservationId()).isEqualTo(new ReservationId("R-1"));
+        assertThat(reserved.reservationId())
+                .isEqualTo(new ReservationId("R-1"));
     }
+    // #endregion
 
+    // #region pay
     @Test
     @DisplayName("引当済からは支払済に進める")
     void 引当済からは支払済に進める() {
-        Reserved reserved = new Accepted(T0).reserve(new ReservationId("R-1"));
+        Reserved reserved = new Accepted(T0)
+                .reserve(new ReservationId("R-1"));
 
         Paid paid = reserved.pay(new PaymentId("PAY-1"));
 
-        assertThat(paid.paymentId()).isEqualTo(new PaymentId("PAY-1"));
-        assertThat(paid.reservationId()).isEqualTo(new ReservationId("R-1"));
+        assertThat(paid.paymentId())
+                .isEqualTo(new PaymentId("PAY-1"));
+        assertThat(paid.reservationId())
+                .isEqualTo(new ReservationId("R-1"));
     }
+    // #endregion
 
     @Test
     @DisplayName("支払済からは確定に進める")
     void 支払済からは確定に進める() {
-        Paid paid = new Accepted(T0).reserve(new ReservationId("R-1")).pay(new PaymentId("PAY-1"));
+        Paid paid = new Accepted(T0)
+                .reserve(new ReservationId("R-1"))
+                .pay(new PaymentId("PAY-1"));
 
         Confirmed confirmed = paid.confirm(T0.plusSeconds(60));
 
-        assertThat(confirmed.paymentId()).isEqualTo(new PaymentId("PAY-1"));
+        assertThat(confirmed.paymentId())
+                .isEqualTo(new PaymentId("PAY-1"));
     }
 
     @Test
@@ -55,6 +67,7 @@ class OrderStateTest {
         assertThat(state).isNotInstanceOf(Paid.class);
     }
 
+    // #region immutable
     @Test
     @DisplayName("遷移しても元の状態は変わらない")
     void 遷移しても元の状態は変わらない() {
@@ -64,6 +77,7 @@ class OrderStateTest {
 
         assertThat(accepted).isEqualTo(new Accepted(T0));
     }
+    // #endregion
 
     @Test
     @DisplayName("取り消した状態は理由を持つ")
