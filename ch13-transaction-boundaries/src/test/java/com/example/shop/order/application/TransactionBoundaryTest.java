@@ -18,26 +18,31 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /** イベントで繋いだとき、失敗が巻き戻す範囲がどこまでかを確かめる。 */
+// #region setup
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
 class TransactionBoundaryTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
-    @Autowired
-    private PlaceOrderService placeOrder;
+    @Autowired private PlaceOrderService placeOrder;
+    @Autowired private OrderRepository orders;
 
-    @Autowired
-    private OrderRepository orders;
-
+    /**
+     * 顧客だけ変えた注文を作る。
+     * テストごとに別の注文にしたいので分けてある。
+     */
     private PlaceOrderCommand command(String customerId) {
         return new PlaceOrderCommand(
                 customerId,
                 "東京都千代田区1-1-1",
-                List.of(new PlaceOrderCommand.Line("P-1", 1, 1500)));
+                List.of(new PlaceOrderCommand.Line(
+                        "P-1", 1, 1500)));
     }
+    // #endregion
 
     @Test
     @DisplayName("注文を受け付けると、在庫の引き当てがあとから動く")
@@ -46,12 +51,12 @@ class TransactionBoundaryTest {
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () ->
-                                assertThat(ReserveStockOnOrderPlaced.reserved)
-                                        .contains(id.value()));
+                .untilAsserted(() -> assertThat(
+                        ReserveStockOnOrderPlaced.reserved)
+                        .contains(id.value()));
     }
 
+    // #region listener-fails
     @Test
     @DisplayName("受信側が失敗しても、発行元の注文は残る")
     void publisherIsNotRolledBackWhenListenerFails() {
@@ -61,10 +66,13 @@ class TransactionBoundaryTest {
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(5))
-                .untilAsserted(
-                        () -> assertThat(ReserveStockOnOrderPlaced.failed).contains(id.value()));
+                .untilAsserted(() -> assertThat(
+                        ReserveStockOnOrderPlaced.failed)
+                        .contains(id.value()));
 
-        // 受信側は落ちた。それでも注文はコミット済みなので残っている。
+        // 受信側は例外で終わった。
+        // それでも注文はコミット済みなので残っている。
         assertThat(orders.findById(id)).isPresent();
     }
 }
+// #endregion

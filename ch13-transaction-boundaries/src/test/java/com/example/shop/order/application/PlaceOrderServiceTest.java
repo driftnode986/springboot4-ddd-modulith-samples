@@ -9,6 +9,7 @@ import com.example.shop.order.domain.Order;
 import com.example.shop.order.domain.OrderId;
 import com.example.shop.order.domain.OrderRepository;
 import com.example.shop.order.domain.OrderState;
+import com.example.shop.order.spi.OrderPlaced;
 import com.example.shop.shipping.spi.ShipmentArrangement;
 import com.example.shop.shipping.spi.ShipmentId;
 import java.time.Clock;
@@ -55,6 +56,17 @@ class PlaceOrderServiceTest {
         assertThat(saved.get().customerId()).isEqualTo(new CustomerId("C-001"));
         assertThat(saved.get().total()).isEqualTo(Money.yen(3000));
         assertThat(saved.get().state()).isInstanceOf(OrderState.Accepted.class);
+    }
+
+    @Test
+    @DisplayName("注文を保存したあと、注文の成立をイベントで知らせる")
+    void publishesOrderPlaced() {
+        PlaceOrderCommand command = new PlaceOrderCommand(
+                "C-001", "東京都千代田区1-1", List.of(new PlaceOrderCommand.Line("P-001", 1, 1500)));
+
+        OrderId id = service.place(command);
+
+        assertThat(events).containsExactly(new OrderPlaced(id.value(), "C-001"));
     }
 
     @Test

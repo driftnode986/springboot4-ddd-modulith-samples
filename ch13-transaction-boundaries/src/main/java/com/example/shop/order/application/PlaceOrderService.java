@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PlaceOrderService {
 
+    // #region fields
     private final OrderRepository orders;
     private final Clock clock;
     private final ShipmentArrangement shipments;
@@ -37,6 +38,7 @@ public class PlaceOrderService {
         this.shipments = shipments;
         this.events = events;
     }
+    // #endregion
 
     @Transactional
     public OrderId place(PlaceOrderCommand command) {
@@ -56,14 +58,17 @@ public class PlaceOrderService {
                     Money.yen(line.unitPriceYen()));
         }
 
+        // #region place-tail
         orders.save(order);
 
         // 出荷は直接呼ぶ。注文と同じトランザクションで動く。
         shipments.arrange(order.id().value(), command.address());
 
         // 在庫はイベントで繋ぐ。受け取る相手をここでは知らない。
-        events.publishEvent(new OrderPlaced(order.id().value(), command.customerId()));
+        events.publishEvent(new OrderPlaced(
+                order.id().value(), command.customerId()));
 
         return order.id();
+        // #endregion
     }
 }
