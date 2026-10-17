@@ -10,40 +10,45 @@ import org.junit.jupiter.api.Test;
 
 class MutablePitfallTest {
 
+    // #region leaky
     record Leaky(List<String> tags) {}
+    // #endregion
 
+    // #region safe
     record Safe(List<String> tags) {
         Safe {
             tags = List.copyOf(tags);
         }
     }
+    // #endregion
 
     @Test
+    @DisplayName("リストをそのまま持つと、外から中身が変わる（確認用）")
     void 実測() {
+        // #region leaky-source
         List<String> source = new ArrayList<>(List.of("gift"));
-
         Leaky leaky = new Leaky(source);
-        source.add("express");
-        System.out.println("[probe] leaky 経由で見える値 = " + leaky.tags());
 
+        source.add("express");
+        // #endregion
+        System.out.println("[probe] 渡した側から追加後 = " + leaky.tags());
+        assertThat(leaky.tags()).containsExactly("gift", "express");
+
+        // #region leaky-got
         List<String> got = leaky.tags();
         got.add("fragile");
+        // #endregion
         System.out.println("[probe] 取り出した側から追加後 = " + leaky.tags());
+        assertThat(leaky.tags())
+                .containsExactly("gift", "express", "fragile");
 
-        List<String> source2 = new ArrayList<>(List.of("gift"));
-        Safe safe = new Safe(source2);
-        source2.add("express");
-        System.out.println("[probe] safe 経由で見える値  = " + safe.tags());
-        try {
-            safe.tags().add("fragile");
-        } catch (UnsupportedOperationException e) {
-            System.out.println("[probe] safe への追加      = UnsupportedOperationException");
-        }
-
-        System.out.println("[probe] Leaky equals = "
-                + new Leaky(new ArrayList<>(List.of("a"))).equals(new Leaky(new ArrayList<>(List.of("a")))));
+        Leaky a = new Leaky(new ArrayList<>(List.of("a")));
+        Leaky b = new Leaky(new ArrayList<>(List.of("a")));
+        System.out.println("[probe] Leaky equals = " + a.equals(b));
+        assertThat(a).isEqualTo(b);
     }
 
+    // #region safe-tests
     @Test
     @DisplayName("渡したリストを変更しても影響しない")
     void 渡したリストを変更しても影響しない() {
@@ -63,4 +68,5 @@ class MutablePitfallTest {
         assertThatThrownBy(() -> safe.tags().add("fragile"))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
+    // #endregion
 }

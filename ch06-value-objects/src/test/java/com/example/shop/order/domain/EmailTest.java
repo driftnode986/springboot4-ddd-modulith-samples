@@ -17,18 +17,25 @@ class EmailTest {
                 .isEqualTo("taguchi@example.com");
     }
 
+    // #region invalid
     @ParameterizedTest
     @DisplayName("不正な形式は生成できない")
-    @ValueSource(strings = {"", " ", "taguchi", "taguchi@", "@example.com", "a b@example.com"})
+    @ValueSource(strings = {"", " ", "taguchi", "taguchi@",
+            "@example.com", "a b@example.com"})
     void 不正な形式は生成できない(String invalid) {
         assertThatThrownBy(() -> new Email(invalid))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+    // #endregion
 
+    // #region equal
     @Test
     @DisplayName("同じ値なら等しい")
     void 同じ値なら等しい() {
-        assertThat(new Email("a@example.com")).isEqualTo(new Email("a@example.com"));
-        assertThat(new Email("a@example.com")).hasSameHashCodeAs(new Email("a@example.com"));
+        assertThat(new Email("a@example.com"))
+                .isEqualTo(new Email("a@example.com"));
+        assertThat(new Email("a@example.com"))
+                .hasSameHashCodeAs(new Email("a@example.com"));
     }
+    // #endregion
 }
