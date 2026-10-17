@@ -100,32 +100,41 @@ class ChargeRetryTest {
                         .withHeader("Idempotency-Key", equalTo(orderId.toString())));
     }
 
+    // #region declined
     @Test
     @DisplayName("与信が通らなかったときは、送り直さない")
     void doesNotRetryWhenDeclined() {
-        wireMock.stubFor(
-                post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_2","status":"declined"}
-                                                """)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type",
+                                "application/json")
+                        .withBody("""
+                                {"id":"ch_2","status":"declined"}
+                                """)));
 
-        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.DECLINED);
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.DECLINED);
 
-        wireMock.verify(1, postRequestedFor(urlEqualTo("/v1/charges")));
+        wireMock.verify(1,
+                postRequestedFor(urlEqualTo("/v1/charges")));
     }
+    // #endregion
 
+    // #region give-up
     @Test
-    @DisplayName("相手が落ち続けたら、結果は確定していないものとして諦める")
+    @DisplayName("相手が落ち続けたら、"
+            + "結果は確定していないものとして諦める")
     void givesUpAfterRepeatedFailures() {
-        wireMock.stubFor(post(urlEqualTo("/v1/charges")).willReturn(aResponse().withStatus(500)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse().withStatus(500)));
 
-        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.UNKNOWN);
 
         // 初回 + 送り直し 2 回。無限には送らない。
-        wireMock.verify(3, postRequestedFor(urlEqualTo("/v1/charges")));
+        wireMock.verify(3,
+                postRequestedFor(urlEqualTo("/v1/charges")));
     }
+    // #endregion
 }

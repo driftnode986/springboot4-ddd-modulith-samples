@@ -18,8 +18,10 @@ interface PaymentApiClient {
      *
      * <p>{@code Idempotency-Key} は、同じ請求を何度送っても課金を 1 回に留めるよう 相手に求めるための印になる。項目名は相手の仕様で決まっている。
      */
+    // #region charge
     @PostExchange("/v1/charges")
     ChargeApiResponse charge(
             @RequestHeader("Idempotency-Key") String idempotencyKey,
             @RequestBody ChargeApiRequest request);
+    // #endregion
 }
