@@ -1,5 +1,6 @@
 package com.example.shop.order.web;
 
+// #region request
 import com.example.shop.order.application.PlaceOrderCommand;
 import java.util.List;
 
@@ -23,3 +24,4 @@ public record PlaceOrderRequest(
         return new PlaceOrderCommand(customerId, commandLines);
     }
 }
+// #endregion

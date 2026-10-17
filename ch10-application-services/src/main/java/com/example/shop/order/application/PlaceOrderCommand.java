@@ -1,5 +1,6 @@
 package com.example.shop.order.application;
 
+// #region command
 import java.util.List;
 
 public record PlaceOrderCommand(
@@ -14,3 +15,4 @@ public record PlaceOrderCommand(
             int quantity,
             long unitPriceYen) {}
 }
+// #endregion

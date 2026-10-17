@@ -1,6 +1,6 @@
-// #region controller-imports
 package com.example.shop.order.web;
 
+// #region controller-imports
 import com.example.shop.order.application.PlaceOrderService;
 import com.example.shop.order.domain.OrderId;
 import org.springframework.http.HttpStatus;

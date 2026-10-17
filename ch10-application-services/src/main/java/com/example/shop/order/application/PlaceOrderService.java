@@ -1,6 +1,6 @@
-// #region service-head
 package com.example.shop.order.application;
 
+// #region service-head
 import com.example.shop.order.domain.CustomerId;
 import com.example.shop.order.domain.Money;
 import com.example.shop.order.domain.Order;

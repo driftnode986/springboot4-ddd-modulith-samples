@@ -1,5 +1,6 @@
 package com.example.shop.order.web;
 
+// #region exception-handler
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,3 +23,4 @@ public class OrderExceptionHandler {
                 e.getMessage());
     }
 }
+// #endregion
