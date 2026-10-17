@@ -17,6 +17,7 @@ repositories {
     mavenCentral()
 }
 
+// #region deps
 ext {
     springModulithVersion = '2.1.0'
 }
@@ -37,6 +38,7 @@ dependencyManagement {
         mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
     }
 }
+// #endregion
 
 tasks.named('test') {
     useJUnitPlatform()
@@ -47,4 +49,34 @@ tasks.named('test') {
         showStandardStreams = true
         events "passed", "failed", "skipped"
     }
+}
+
+// 本が「まずこう書く → 後で書き換える」と示す途中の版は steps/<名前>/src/{main,test}/java に置く。
+// 完成形（src/）とは別のソースセットでビルドしてテストし、./gradlew test の後に続けて回す。
+// 途中の版のクラスは完成形と同じ名前なので、クラスパスでは完成形より前に置く。
+def stepTests = []
+(file('steps').listFiles() ?: []).findAll { it.directory }.sort().each { dir ->
+    def name = 'step' + dir.name.split(/[^A-Za-z0-9]+/)*.capitalize().join()
+    def set = sourceSets.create(name) {
+        java.srcDirs = ["${dir}/src/main/java", "${dir}/src/test/java"]
+        compileClasspath = sourceSets.main.output +
+                configurations.testCompileClasspath
+        runtimeClasspath = output + sourceSets.main.output +
+                configurations.testRuntimeClasspath
+    }
+    stepTests << tasks.register("${name}Test", Test) {
+        description = "steps/${dir.name} のテスト"
+        group = 'verification'
+        testClassesDirs = set.output.classesDirs
+        classpath = set.runtimeClasspath
+        useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+            events "passed", "failed", "skipped"
+        }
+    }
+}
+
+tasks.named('test') {
+    finalizedBy stepTests
 }
