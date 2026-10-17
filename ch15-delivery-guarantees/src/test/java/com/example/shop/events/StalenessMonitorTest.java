@@ -51,36 +51,47 @@ class StalenessMonitorTest {
                 .run("--spring.modulith.events.republish-outstanding-events-on-restart=false");
     }
 
-    /** 十分に古い「発表済みのまま」のイベントを 1 件置く。 */
+    // #region leave-stale
     private void leaveStalePublication(JdbcTemplate jdbc) {
         jdbc.update("DELETE FROM event_publication");
 
         String serialized =
                 """
-                {"eventId":"%s","orderId":"%s","customerId":"CUS-STALE",\
+                {"eventId":"%s","orderId":"%s",\
+                "customerId":"CUS-STALE",\
                 "items":[{"productId":"P-STALE","quantity":1}]}"""
-                        .formatted(UUID.randomUUID(), UUID.randomUUID());
+                        .formatted(UUID.randomUUID(),
+                                UUID.randomUUID());
 
         jdbc.update(
                 """
                 INSERT INTO event_publication
                   (id, listener_id, event_type, serialized_event,
-                   publication_date, completion_date, completion_attempts, status)
+                   publication_date, completion_date,
+                   completion_attempts, status)
                 VALUES (?, ?, ?, ?, ?, NULL, 0, 'PUBLISHED')
                 """,
                 UUID.randomUUID(),
                 LISTENER_ID,
                 OrderPlaced.class.getName(),
                 serialized,
-                java.sql.Timestamp.from(Instant.now().minus(Duration.ofHours(1))));
+                java.sql.Timestamp.from(
+                        Instant.now().minus(Duration.ofHours(1))));
     }
+    // #endregion
 
+    // #region status-of
     private String statusOf(JdbcTemplate jdbc) {
-        return jdbc.queryForObject("SELECT status FROM event_publication", String.class);
+        return jdbc.queryForObject(
+                "SELECT status FROM event_publication",
+                String.class);
     }
+    // #endregion
 
+    // #region left-alone
     @Test
-    @DisplayName("時間を設定しなければ、詰まったイベントは発表済みのまま放置される")
+    @DisplayName("時間を設定しなければ、"
+            + "詰まったイベントは発表済みのまま放置される")
     void stalePublicationIsLeftAloneWithoutConfiguration() {
         try (ConfigurableApplicationContext context = start()) {
             JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
@@ -89,27 +100,44 @@ class StalenessMonitorTest {
             Awaitility.await()
                     .during(Duration.ofSeconds(4))
                     .atMost(Duration.ofSeconds(8))
-                    .untilAsserted(() -> assertThat(statusOf(jdbc)).isEqualTo("PUBLISHED"));
-
-            System.out.println("NO_STALENESS_STATUS=" + statusOf(jdbc));
+                    .untilAsserted(() -> assertThat(statusOf(jdbc))
+                            .isEqualTo("PUBLISHED"));
         }
     }
+    // #endregion
 
+    // #region marked-failed
     @Test
-    @DisplayName("時間を設定すると、詰まったイベントが失敗として拾い上げられる")
+    @DisplayName("時間を設定すると、"
+            + "詰まったイベントが失敗として拾い上げられる")
     void stalePublicationIsMarkedFailedWhenConfigured() {
         try (ConfigurableApplicationContext context =
                 start(
-                        "spring.modulith.events.staleness.published=1m",
-                        "spring.modulith.events.staleness.check-intervall=1s")) {
+                        "spring.modulith.events.staleness"
+                                + ".published=1m",
+                        "spring.modulith.events.staleness"
+                                + ".check-intervall=1s")) {
+            JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+            leaveStalePublication(jdbc);
+
+            Awaitility.await()
+                    .atMost(Duration.ofSeconds(15))
+                    .untilAsserted(() -> assertThat(statusOf(jdbc))
+                            .isEqualTo("FAILED"));
+        }
+    }
+    // #endregion
+
+    @Test
+    @DisplayName("application-staleness.yml の設定でも、詰まったイベントが失敗として拾い上げられる")
+    void stalenessProfileMarksStalePublicationFailed() {
+        try (ConfigurableApplicationContext context = start("spring.profiles.active=staleness")) {
             JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
             leaveStalePublication(jdbc);
 
             Awaitility.await()
                     .atMost(Duration.ofSeconds(15))
                     .untilAsserted(() -> assertThat(statusOf(jdbc)).isEqualTo("FAILED"));
-
-            System.out.println("STALENESS_STATUS=" + statusOf(jdbc));
         }
     }
 }

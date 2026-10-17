@@ -1,0 +1,11 @@
+# Hibernate が生成する表の定義を書き出させる（一時的な確認用）。
+# 有効にするには spring.profiles.active=schema-dump で起動する。
+# #region schema-dump
+spring:
+  jpa:
+    properties:
+      jakarta.persistence.schema-generation.scripts.action: create
+      jakarta.persistence.schema-generation.scripts.create-target: /tmp/schema-out.sql
+    hibernate:
+      ddl-auto: create
+# #endregion

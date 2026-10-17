@@ -110,4 +110,18 @@ class CompletionModeTest {
             System.out.println("DELETE_MODE_ROWCOUNT=" + rowCount(jdbc));
         }
     }
+
+    @Test
+    @DisplayName("application-completion-delete.yml の設定でも、完了と同時に行が消える")
+    void completionDeleteProfileDeletesCompletedPublication() {
+        String sku = "P-DELP-" + UUID.randomUUID().toString().substring(0, 4);
+
+        try (ConfigurableApplicationContext context =
+                start("spring.profiles.active=completion-delete")) {
+            placeOneOrder(context, sku);
+            JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+
+            assertThat(rowCount(jdbc)).isZero();
+        }
+    }
 }
