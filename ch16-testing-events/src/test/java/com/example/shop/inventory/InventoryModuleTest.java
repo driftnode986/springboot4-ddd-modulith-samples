@@ -23,9 +23,11 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  *
  * <p>注文モジュールは起動しない。イベントは直接投げ込む。
  */
+// #region header
 @ApplicationModuleTest(verifyAutomatically = false)
 @Testcontainers(disabledWithoutDocker = true)
 class InventoryModuleTest {
+// #endregion
 
     @Container
     @ServiceConnection
@@ -42,6 +44,7 @@ class InventoryModuleTest {
         jdbc.update("INSERT INTO stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
     }
 
+    // #region reserves-on-event
     @Test
     @DisplayName("イベントを投げ込むと、在庫が引き当てられる")
     void reservesOnIncomingEvent(Scenario scenario) {
@@ -53,7 +56,12 @@ class InventoryModuleTest {
                         List.of(new OrderPlaced.Item(sku, 3)));
 
         scenario.publish(event)
-                .andWaitForStateChange(() -> stocks.findBySku(sku).orElseThrow().quantity(), q -> q < 10)
-                .andVerify(quantity -> assertThat(quantity).isEqualTo(7));
+                .andWaitForStateChange(
+                        () -> stocks.findBySku(sku)
+                                .orElseThrow().quantity(),
+                        q -> q < 10)
+                .andVerify(quantity ->
+                        assertThat(quantity).isEqualTo(7));
     }
+    // #endregion
 }

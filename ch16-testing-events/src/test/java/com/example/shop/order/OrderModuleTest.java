@@ -36,13 +36,19 @@ class OrderModuleTest {
 
     @Autowired private PlaceOrderService placeOrder;
 
+    // #region mock
     @MockitoBean private ShipmentArrangement shipments;
+    // #endregion
 
     @Test
     @DisplayName("注文が成立すると、注文成立の事実が発行される")
     void publishesOrderPlaced(Scenario scenario) {
-        BDDMockito.given(shipments.arrange(BDDMockito.anyString(), BDDMockito.anyString()))
-                .willReturn(new ShipmentId(UUID.randomUUID().toString()));
+        // #region given
+        BDDMockito.given(shipments.arrange(
+                        BDDMockito.anyString(), BDDMockito.anyString()))
+                .willReturn(new ShipmentId(
+                        UUID.randomUUID().toString()));
+        // #endregion
 
         PlaceOrderCommand command =
                 new PlaceOrderCommand(

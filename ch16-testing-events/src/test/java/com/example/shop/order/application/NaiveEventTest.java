@@ -46,31 +46,41 @@ class NaiveEventTest {
                 "CUS-1", "東京都千代田区1-1", List.of(new PlaceOrderCommand.Line(sku, 3, 1200L)));
     }
 
+    // #region cannot-see
+    @Test
+    @DisplayName("しかし在庫が減ったかどうかは、"
+            + "この時点では分からない")
+    void cannotSeeTheOutcomeYet() {
+        placeOrder.place(command());
+
+        // 受け取る側は別スレッドで動くので、
+        // ここではまだ終わっていないことがある。
+        int remaining =
+                stocks.findBySku(sku).orElseThrow().quantity();
+        System.out.println(
+                "PROBE_REMAINING_RIGHT_AFTER_PLACE=" + remaining);
+        assertThat(remaining).isBetween(7, 10);
+    }
+    // #endregion
+
     /**
      * 発行された事実は {@code PublishedEvents} で見える。ただし引数で受け取るには
      * Spring Modulith の拡張が要る。{@code @SpringBootTest} だけを付けた状態でこの引数を
-     * 宣言すると、テストが動く前に {@code ParameterResolutionException} で落ちる。
-     * 拡張を有効にする方法は本文で扱う。
+     * 宣言すると、テストが動く前に {@code ParameterResolutionException} で落ちる
+     * （probes/ の NaiveEventTest.java で確かめられる）。
      */
+    // #region sees-publication
     @Test
     @DisplayName("発行されたことは PublishedEvents で見える")
     void seesThePublication() {
         placeOrder.place(command());
 
-        // ここでは拡張なしで動かすため、引数では受け取らずに発行の有無だけを確かめる。
-        Integer publications =
-                jdbc.queryForObject("SELECT count(*) FROM event_publication", Integer.class);
+        // ここでは拡張なしで動かすため、引数では受け取らずに
+        // 発行の有無だけを確かめる。
+        Integer publications = jdbc.queryForObject(
+                "SELECT count(*) FROM event_publication",
+                Integer.class);
         assertThat(publications).isPositive();
     }
-
-    @Test
-    @DisplayName("しかし在庫が減ったかどうかは、この時点では分からない")
-    void cannotSeeTheOutcomeYet() {
-        placeOrder.place(command());
-
-        // 受け取る側は別スレッドで動くので、ここではまだ終わっていないことがある。
-        int remaining = stocks.findBySku(sku).orElseThrow().quantity();
-        System.out.println("PROBE_REMAINING_RIGHT_AFTER_PLACE=" + remaining);
-        assertThat(remaining).isBetween(7, 10);
-    }
+    // #endregion
 }

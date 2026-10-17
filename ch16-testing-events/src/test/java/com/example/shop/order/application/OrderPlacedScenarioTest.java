@@ -21,10 +21,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /** 注文から在庫の引き当てまでを、結果が出るまで待って確かめる。 */
+// #region header
 @SpringBootTest
 @EnableScenarios
 @Testcontainers(disabledWithoutDocker = true)
 class OrderPlacedScenarioTest {
+// #endregion
 
     @Container
     @ServiceConnection
@@ -47,30 +49,48 @@ class OrderPlacedScenarioTest {
                 "CUS-1", "東京都千代田区1-1", List.of(new PlaceOrderCommand.Line(sku, 3, 1200L)));
     }
 
+    // #region reserves-eventually
     @Test
-    @DisplayName("注文すると、在庫が引き当てられるまで待って確かめられる")
+    @DisplayName("注文すると、"
+            + "在庫が引き当てられるまで待って確かめられる")
     void reservesStockEventually(Scenario scenario) {
         scenario.stimulate(() -> placeOrder.place(command()))
-                .andWaitForStateChange(() -> stocks.findBySku(sku).orElseThrow().quantity(), q -> q < 10)
-                .andVerify(quantity -> assertThat(quantity).isEqualTo(7));
+                .andWaitForStateChange(
+                        () -> stocks.findBySku(sku)
+                                .orElseThrow().quantity(),
+                        q -> q < 10)
+                .andVerify(quantity ->
+                        assertThat(quantity).isEqualTo(7));
     }
+    // #endregion
 
+    // #region publishes
     @Test
     @DisplayName("発行された事実そのものを確かめる")
     void publishesOrderPlaced(Scenario scenario) {
         scenario.stimulate(() -> placeOrder.place(command()))
                 .andWaitForEventOfType(OrderPlaced.class)
-                .matchingMappedValue(OrderPlaced::customerId, "CUS-1")
-                .toArriveAndVerify(
-                        event -> assertThat(event.items()).extracting("productId").containsExactly(sku));
+                .matchingMappedValue(
+                        OrderPlaced::customerId, "CUS-1")
+                .toArriveAndVerify(event ->
+                        assertThat(event.items())
+                                .extracting("productId")
+                                .containsExactly(sku));
     }
+    // #endregion
 
     @Test
     @DisplayName("待つ時間の上限を指定できる")
     void canBoundTheWait(Scenario scenario) {
+        // #region wait-at-most
         scenario.stimulate(() -> placeOrder.place(command()))
                 .andWaitAtMost(Duration.ofSeconds(5))
-                .andWaitForStateChange(() -> stocks.findBySku(sku).orElseThrow().quantity(), q -> q < 10)
-                .andVerify(quantity -> assertThat(quantity).isEqualTo(7));
+                .andWaitForStateChange(
+                        () -> stocks.findBySku(sku)
+                                .orElseThrow().quantity(),
+                        q -> q < 10)
+                .andVerify(quantity ->
+                        assertThat(quantity).isEqualTo(7));
+        // #endregion
     }
 }
