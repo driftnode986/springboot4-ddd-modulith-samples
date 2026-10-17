@@ -1,0 +1,1 @@
+org.springframework.modulith.core.Violations: - Module 'order' depends on module 'inventory' via com.example.shop.order.application.BadInternalAccess -> com.example.shop.inventory.domain.Stock. Allowed targets: inventory :: spi, payment :: spi.

@@ -1,0 +1,9 @@
+org.springframework.modulith.core.Violations: - Cycle detected: Slice inventory -> 
+                Slice order -> 
+                Slice inventory
+  1. Dependencies of Slice inventory
+    - Method <com.example.shop.inventory.application.CycleDemo.on(com.example.shop.order.spi.OrderPlaced)> has parameter of type <com.example.shop.order.spi.OrderPlaced> in (CycleDemo.java:0)
+  2. Dependencies of Slice order
+    - Constructor <com.example.shop.order.application.PlaceOrderService.<init>(com.example.shop.order.domain.OrderRepository, com.example.shop.inventory.spi.StockReservation, com.example.shop.payment.spi.PaymentRequest)> has parameter of type <com.example.shop.inventory.spi.StockReservation> in (PlaceOrderService.java:0)
+    - Field <com.example.shop.order.application.PlaceOrderService.stocks> has type <com.example.shop.inventory.spi.StockReservation> in (PlaceOrderService.java:0)
+    - Method <com.example.shop.order.application.PlaceOrderService.place(java.lang.String, java.lang.String, int)> calls method <com.example.shop.inventory.spi.StockReservation.reserve(java.lang.String, int)> in (PlaceOrderService.java:31)
