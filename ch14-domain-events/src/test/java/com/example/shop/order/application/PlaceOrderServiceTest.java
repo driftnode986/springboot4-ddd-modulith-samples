@@ -9,6 +9,7 @@ import com.example.shop.order.domain.Order;
 import com.example.shop.order.domain.OrderId;
 import com.example.shop.order.domain.OrderRepository;
 import com.example.shop.order.domain.OrderState;
+import com.example.shop.order.spi.OrderPlaced;
 import com.example.shop.shipping.spi.ShipmentArrangement;
 import com.example.shop.shipping.spi.ShipmentId;
 import java.time.Clock;
@@ -79,6 +80,27 @@ class PlaceOrderServiceTest {
                 .isInstanceOf(IllegalStateException.class);
 
         assertThat(repository.saveCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("注文を受け付けると、明細を載せた OrderPlaced を発表する")
+    void publishesOrderPlacedWithItems() {
+        PlaceOrderCommand command = new PlaceOrderCommand(
+                "C-001",
+                "東京都千代田区1-1",
+                List.of(new PlaceOrderCommand.Line("P-001", 2, 1500),
+                        new PlaceOrderCommand.Line("P-002", 1, 800)));
+
+        OrderId id = service.place(command);
+
+        assertThat(events).hasSize(1);
+        OrderPlaced placed = (OrderPlaced) events.get(0);
+        assertThat(placed.eventId()).isNotBlank();
+        assertThat(placed.orderId()).isEqualTo(id.value());
+        assertThat(placed.customerId()).isEqualTo("C-001");
+        assertThat(placed.items()).containsExactly(
+                new OrderPlaced.Item("P-001", 2),
+                new OrderPlaced.Item("P-002", 1));
     }
 
     /** 保存が呼ばれた回数まで見たいので、第9章のインメモリ実装に数えるだけの機能を足した。 */

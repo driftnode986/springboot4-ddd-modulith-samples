@@ -1,6 +1,10 @@
+# #region flyway
 spring:
   flyway:
-    locations: classpath:db/migration/order,classpath:db/migration/inventory
+    locations:
+      - classpath:db/migration/order
+      - classpath:db/migration/inventory
+# #endregion
   jpa:
     hibernate:
       ddl-auto: validate

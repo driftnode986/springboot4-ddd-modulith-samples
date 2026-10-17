@@ -7,6 +7,7 @@ package com.example.shop.inventory.domain;
  * 尋ねてから書くまでの隙間に同じイベントが割り込むと、どちらも
  * 「まだ処理していない」と判断してしまうため。
  */
+// #region handled-events
 public interface HandledEvents {
 
     /**
@@ -16,3 +17,4 @@ public interface HandledEvents {
      */
     boolean recordIfFirst(String eventId, String handler);
 }
+// #endregion
