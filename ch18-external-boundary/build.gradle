@@ -27,8 +27,12 @@ dependencies {
     implementation 'org.springframework.modulith:spring-modulith-core'
     implementation 'org.springframework.modulith:spring-modulith-events-api'
     implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
-    implementation 'org.springframework.boot:spring-boot-http-client'
-    implementation 'org.springframework.boot:spring-boot-restclient'
+    // #region http-client-deps
+    implementation(
+            'org.springframework.boot:spring-boot-http-client')
+    implementation(
+            'org.springframework.boot:spring-boot-restclient')
+    // #endregion
     implementation 'org.springframework.boot:spring-boot-flyway'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
@@ -40,7 +44,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
+    // #region wiremock-dep
     testImplementation 'org.wiremock:wiremock-standalone:3.13.1'
+    // #endregion
 }
 
 tasks.register('structureTest', Test) {

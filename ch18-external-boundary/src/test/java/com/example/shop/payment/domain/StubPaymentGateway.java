@@ -3,6 +3,7 @@ package com.example.shop.payment.domain;
 import java.util.UUID;
 
 /** 決まった結果だけを返す差し替え用の実装。ネットワークには出ない。 */
+// #region stub
 public class StubPaymentGateway implements PaymentGateway {
 
     private final ChargeResult result;
@@ -16,3 +17,4 @@ public class StubPaymentGateway implements PaymentGateway {
         return result;
     }
 }
+// #endregion

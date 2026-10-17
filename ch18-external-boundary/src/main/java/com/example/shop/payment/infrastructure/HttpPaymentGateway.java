@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClientException;
  *
  * <p>相手が返す {@code "succeeded"} や HTTP の 500 は、この中で {@link ChargeResult} に置き換わる。 支払いの内側は、相手がどんな文字列を返すかを知らないままでいられる。
  */
+// #region http-payment-gateway
 @Component
 class HttpPaymentGateway implements PaymentGateway {
 
@@ -24,18 +25,18 @@ class HttpPaymentGateway implements PaymentGateway {
     public ChargeResult charge(UUID orderId, long amountYen) {
         try {
             ChargeApiResponse response =
-                    client.charge(new ChargeApiRequest(orderId.toString(), amountYen, "JPY"));
+                    client.charge(new ChargeApiRequest(
+                            orderId.toString(),
+                            amountYen,
+                            "JPY"));
             return translate(response.status());
         } catch (RestClientException e) {
-            // 相手が異常を返した、応答が返らなかった、途中で切れた。
-            // どれも「請求が通ったかどうかはこちらからは分からない」に落ちる。
-            // 待ち時間を超えたときは接続そのものの例外ではなく、
-            // 読みかけの本文を解釈できないという形で表面化することがある。
             return ChargeResult.UNKNOWN;
         }
     }
+    // #endregion
 
-    /** 相手の文字列を支払いの語彙へ置き換える。知らない値は、成立とは見なさない。 */
+    // #region translate
     private ChargeResult translate(String status) {
         return switch (status) {
             case "succeeded" -> ChargeResult.SETTLED;
@@ -44,3 +45,4 @@ class HttpPaymentGateway implements PaymentGateway {
         };
     }
 }
+// #endregion

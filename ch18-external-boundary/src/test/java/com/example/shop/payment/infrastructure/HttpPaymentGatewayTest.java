@@ -31,13 +31,15 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  *
  * <p>相手役は WireMock が務める。決済代行会社に本当につなぐわけではないが、 通信そのものは本物なので、遅延や失敗をこちらから作れる。
  */
+// #region gateway-test-head
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
 class HttpPaymentGatewayTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     private static WireMockServer wireMock;
 
@@ -45,7 +47,8 @@ class HttpPaymentGatewayTest {
 
     @BeforeAll
     static void startStubServer() {
-        // 0 を渡すと空いているポートが選ばれる。固定すると他のテストとぶつかる。
+        // 0 を渡すと空いているポートが選ばれる。
+        // 固定すると他のテストとぶつかる。
         wireMock = new WireMockServer(0);
         wireMock.start();
     }
@@ -54,17 +57,23 @@ class HttpPaymentGatewayTest {
     static void stopStubServer() {
         wireMock.stop();
     }
+    // #endregion
 
+    // #region gateway-test-setup
     @DynamicPropertySource
-    static void paymentApiUrl(DynamicPropertyRegistry registry) {
-        // 起動してからでないとポートが決まらないので、ここで設定に流し込む。
-        registry.add("spring.http.serviceclient.payment.base-url", () -> wireMock.baseUrl());
-        // WireMock が同梱する Jetty は、JDK 標準のクライアントと相性が悪く
-        // 応答の途中で切られたように見える。ここでは素朴なクライアントに切り替える。
-        registry.add("spring.http.clients.imperative.factory", () -> "simple");
-        // 応答を待ち続けないよう、待ち時間の上限を決めておく。
-        registry.add("spring.http.clients.connect-timeout", () -> "1s");
-        registry.add("spring.http.clients.read-timeout", () -> "300ms");
+    static void paymentApiUrl(
+            DynamicPropertyRegistry registry) {
+        // 起動してからでないとポートが決まらないので、
+        // ここで設定に流し込む。
+        registry.add(
+                "spring.http.serviceclient.payment.base-url",
+                () -> wireMock.baseUrl());
+        registry.add("spring.http.clients.imperative.factory",
+                () -> "simple");
+        registry.add("spring.http.clients.connect-timeout",
+                () -> "1s");
+        registry.add("spring.http.clients.read-timeout",
+                () -> "300ms");
     }
 
     @BeforeEach
@@ -72,95 +81,105 @@ class HttpPaymentGatewayTest {
         wireMock.resetAll();
     }
 
+    // テストメソッドは、この下に順に足していきます。
+    // #endregion
+
+    // #region test-succeeded
     @Test
-    @DisplayName("相手が succeeded を返したら、支払いは成立として扱う")
+    @DisplayName("相手が succeeded を返したら、"
+            + "支払いは成立として扱う")
     void translatesSucceededToSettled() {
-        wireMock.stubFor(
-                post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(
-                                                """
-                                                {"id":"ch_1","status":"succeeded"}
-                                                """)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type",
+                                "application/json")
+                        .withBody("""
+                                {"id":"ch_1","status":"succeeded"}
+                                """)));
 
         UUID orderId = UUID.randomUUID();
-        ChargeResult result = gateway.charge(orderId, 12_000);
 
-        assertThat(result).isEqualTo(ChargeResult.SETTLED);
+        assertThat(gateway.charge(orderId, 12_000))
+                .isEqualTo(ChargeResult.SETTLED);
 
         // 相手が決めた項目名で送れていることも確かめておく。
-        wireMock.verify(
-                postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Content-Type", equalTo("application/json"))
-                        .withRequestBody(
-                                equalToJson(
-                                        """
-                                        {"reference":"%s","amount":12000,"currency":"JPY"}
-                                        """
-                                                .formatted(orderId))));
+        String expected = """
+                {"reference":"%s","amount":12000,"currency":"JPY"}
+                """.formatted(orderId);
+        wireMock.verify(postRequestedFor(urlEqualTo("/v1/charges"))
+                .withHeader("Content-Type",
+                        equalTo("application/json"))
+                .withRequestBody(equalToJson(expected)));
     }
+    // #endregion
 
+    // #region test-declined
     @Test
-    @DisplayName("相手が declined を返したら、与信が通らなかったとして扱う")
+    @DisplayName("相手が declined を返したら、"
+            + "与信が通らなかったとして扱う")
     void translatesDeclinedToDeclined() {
-        wireMock.stubFor(
-                post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(
-                                                """
-                                                {"id":"ch_2","status":"declined"}
-                                                """)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type",
+                                "application/json")
+                        .withBody("""
+                                {"id":"ch_2","status":"declined"}
+                                """)));
 
         assertThat(gateway.charge(UUID.randomUUID(), 12_000))
                 .isEqualTo(ChargeResult.DECLINED);
     }
+    // #endregion
 
+    // #region test-failures
     @Test
-    @DisplayName("相手が 500 を返したら、結果は確定していないものとして扱う")
+    @DisplayName("相手が 500 を返したら、"
+            + "結果は確定していないものとして扱う")
     void treatsServerErrorAsUnknown() {
-        wireMock.stubFor(post(urlEqualTo("/v1/charges")).willReturn(aResponse().withStatus(500)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse().withStatus(500)));
 
-        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.UNKNOWN);
     }
 
     @Test
-    @DisplayName("相手が時間内に応答しなかったら、結果は確定していないものとして扱う")
+    @DisplayName("相手が時間内に応答しなかったら、"
+            + "結果は確定していないものとして扱う")
     void treatsTimeoutAsUnknown() {
-        wireMock.stubFor(
-                post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_4","status":"succeeded"}
-                                                """)
-                                        // 待ち時間の上限より長く、応答を送り始めるまで待たせる。
-                                        .withFixedDelay(2_000)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type",
+                                "application/json")
+                        .withBody("""
+                                {"id":"ch_4","status":"succeeded"}
+                                """)
+                        // 待ち時間の上限より長く待たせる。
+                        .withFixedDelay(2_000)));
 
-        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.UNKNOWN);
     }
+    // #endregion
 
+    // #region test-unknown-status
     @Test
     @DisplayName("相手が知らない状態を返したら、成立とは見なさない")
     void treatsUnknownStatusAsUnknown() {
-        wireMock.stubFor(
-                post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(
-                                                """
-                                                {"id":"ch_3","status":"processing"}
-                                                """)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type",
+                                "application/json")
+                        .withBody("""
+                                {"id":"ch_3","status":"processing"}
+                                """)));
 
-        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.UNKNOWN);
     }
+    // #endregion
 }
