@@ -38,20 +38,21 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers-postgresql'
 }
 
+// #region structure-test
 tasks.register('structureTest', Test) {
-    description = '境界の構造だけを検証する。DB を起動しないので速い。'
+    description = '境界の構造だけを検証する。' +
+            'DB を起動しないので速い。'
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform()
     filter {
-        includeTestsMatching 'com.example.shop.StagedAdoptionTests'
+        includeTestsMatching(
+                'com.example.shop.StagedAdoptionTests')
         includeTestsMatching 'com.example.shop.LayeringTests'
     }
-    testLogging {
-        events "passed", "failed"
-    }
 }
+// #endregion
 
 tasks.named('test') {
     useJUnitPlatform()

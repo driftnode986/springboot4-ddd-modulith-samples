@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
 
+# #region jobs-structure
 jobs:
   structure:
     runs-on: ubuntu-latest
@@ -22,11 +23,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: structure
     steps:
+      # checkout / setup-java / setup-gradle は上と同じ
+# #endregion
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: temurin
       - uses: gradle/actions/setup-gradle@v6
+# #region jobs-test
       - name: すべてのテストを実行する
         run: ./gradlew test
+# #endregion
