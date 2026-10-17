@@ -1,10 +1,10 @@
 package com.example.shop.order.domain;
 
+// #region in-memory-repository
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/** テスト用の実装。保存先が入れ替わってもドメインのテストは変わらないことを示す。 */
 class InMemoryOrderRepository implements OrderRepository {
 
     private final Map<OrderId, Order> store = new HashMap<>();
@@ -19,3 +19,4 @@ class InMemoryOrderRepository implements OrderRepository {
         return Optional.ofNullable(store.get(id));
     }
 }
+// #endregion

@@ -19,15 +19,22 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // #region flyway
     implementation 'org.springframework.boot:spring-boot-flyway'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
+    // #endregion
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
-    testImplementation 'org.testcontainers:testcontainers-postgresql'
+    // #region testcontainers
+    testImplementation(
+            'org.springframework.boot:spring-boot-testcontainers')
+    testImplementation(
+            'org.testcontainers:testcontainers-junit-jupiter')
+    testImplementation(
+            'org.testcontainers:testcontainers-postgresql')
+    // #endregion
 }
 
 tasks.named('test') {

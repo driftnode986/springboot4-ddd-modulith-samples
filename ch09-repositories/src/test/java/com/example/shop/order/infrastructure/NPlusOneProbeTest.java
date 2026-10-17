@@ -58,10 +58,12 @@ class NPlusOneProbeTest {
         order.addLine(new ProductId("P-2"), new Quantity(2), Money.yen(2000));
         repository.save(order);
 
-        // 保存したものが持ち越されていると問い合わせが出ないので、
-        // いったん書き出してから持ち越しを捨てる。
+        // #region flush-clear
+        // 保存したものが持ち越されていると問い合わせが
+        // 出ないので、いったん書き出してから持ち越しを捨てる。
         entityManager.flush();
         entityManager.clear();
+        // #endregion
 
         Statistics statistics =
                 entityManagerFactory.unwrap(SessionFactory.class).getStatistics();

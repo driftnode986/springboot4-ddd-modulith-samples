@@ -35,18 +35,30 @@ class OptimisticLockTest {
     @Autowired
     private OrderJpaRepository jpa;
 
+    // #region lock-test
     @Test
-    @DisplayName("同じ注文を2人が同時に更新すると後から書いた方が失敗する")
+    @DisplayName("同じ注文を2人が同時に更新すると"
+            + "後から書いた方が失敗する")
     void concurrentUpdateFailsForSecondWriter() {
+        // 注文を 1 件保存しておく
+        // #endregion
         OrderId id = new OrderId("ORD-400");
-        Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
-        order.addLine(new ProductId("P-1"), new Quantity(1), Money.yen(1000));
+        Order order = Order.place(
+                id,
+                new CustomerId("CUS-1"),
+                Instant.parse("2026-01-01T00:00:00Z"));
+        order.addLine(new ProductId("P-1"), new Quantity(1),
+                Money.yen(1000));
         repository.save(order);
 
+        // #region lock-test-rest
         // 2 人が同じ版を読む
-        OrderEntity first = jpa.findWithLinesById(id.value()).orElseThrow();
-        OrderEntity second = jpa.findWithLinesById(id.value()).orElseThrow();
-        assertThat(first.getVersion()).isEqualTo(second.getVersion());
+        OrderEntity first =
+                jpa.findWithLinesById(id.value()).orElseThrow();
+        OrderEntity second =
+                jpa.findWithLinesById(id.value()).orElseThrow();
+        assertThat(first.getVersion())
+                .isEqualTo(second.getVersion());
 
         // 先に書いた方は通る
         first.setState("RESERVED");
@@ -54,7 +66,10 @@ class OptimisticLockTest {
 
         // 後から書いた方は、読んだときの版が古いので弾かれる
         second.setState("CANCELLED");
+        var conflict =
+                ObjectOptimisticLockingFailureException.class;
         assertThatThrownBy(() -> jpa.saveAndFlush(second))
-                .isInstanceOf(ObjectOptimisticLockingFailureException.class);
+                .isInstanceOf(conflict);
     }
+    // #endregion
 }

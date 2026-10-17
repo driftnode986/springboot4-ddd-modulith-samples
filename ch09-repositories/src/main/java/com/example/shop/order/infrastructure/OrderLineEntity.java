@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
+// #region line-entity-fields
 @Entity
 @Table(name = "order_lines")
 class OrderLineEntity {
@@ -27,17 +28,26 @@ class OrderLineEntity {
 
     @Column(name = "unit_currency", nullable = false)
     private String unitCurrency;
+    // #endregion
 
+    // #region line-entity-ctor
     protected OrderLineEntity() {
         // JPA が使う
     }
 
-    OrderLineEntity(String productId, int quantity, BigDecimal unitAmount, String unitCurrency) {
+    OrderLineEntity(
+            String productId,
+            int quantity,
+            BigDecimal unitAmount,
+            String unitCurrency) {
         this.productId = productId;
         this.quantity = quantity;
         this.unitAmount = unitAmount;
         this.unitCurrency = unitCurrency;
     }
+
+    // 以下、各フィールドの getter
+    // #endregion
 
     String getProductId() {
         return productId;
