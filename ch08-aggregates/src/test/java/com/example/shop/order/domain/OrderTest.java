@@ -12,15 +12,19 @@ class OrderTest {
     private static final CustomerId CUSTOMER = new CustomerId("C-001");
     private static final Instant NOW = Instant.parse("2026-08-06T10:00:00Z");
 
+    // #region total-changes
     @Test
     @DisplayName("明細を足すと合計が変わる")
     void totalChangesWhenLineAdded() {
-        Order order = Order.place(new OrderId("O-001"), CUSTOMER, NOW);
+        Order order =
+                Order.place(new OrderId("O-001"), CUSTOMER, NOW);
 
-        order.addLine(new ProductId("P-100"), new Quantity(2), Money.yen(980));
+        order.addLine(new ProductId("P-100"), new Quantity(2),
+                Money.yen(980));
 
         assertThat(order.total()).isEqualTo(Money.yen(1960));
     }
+    // #endregion
 
     @Test
     @DisplayName("明細を足すたびに合計が積み上がる")
@@ -41,56 +45,79 @@ class OrderTest {
         assertThat(order.total()).isEqualTo(Money.yen(0));
     }
 
+    // #region lines-not-writable
     @Test
     @DisplayName("取り出した明細を変更しても注文の中身は変わらない")
     void linesAreNotWritableFromOutside() {
-        Order order = Order.place(new OrderId("O-004"), CUSTOMER, NOW);
-        order.addLine(new ProductId("P-100"), new Quantity(1), Money.yen(980));
+        Order order =
+                Order.place(new OrderId("O-004"), CUSTOMER, NOW);
+        order.addLine(new ProductId("P-100"), new Quantity(1),
+                Money.yen(980));
 
         assertThatThrownBy(() -> order.lines().add(
-                        new OrderLine(new ProductId("P-999"), new Quantity(1), Money.yen(1))))
+                        new OrderLine(new ProductId("P-999"),
+                                new Quantity(1), Money.yen(1))))
                 .isInstanceOf(UnsupportedOperationException.class);
 
         assertThat(order.lines()).hasSize(1);
         assertThat(order.total()).isEqualTo(Money.yen(980));
     }
+    // #endregion
 
+    // #region rejects-over-limit
     @Test
     @DisplayName("合計が上限を超える明細は追加できない")
     void rejectsLineThatExceedsLimit() {
-        Order order = Order.place(new OrderId("O-005"), CUSTOMER, NOW);
-        order.addLine(new ProductId("P-100"), new Quantity(1), Money.yen(400_000));
+        Order order =
+                Order.place(new OrderId("O-005"), CUSTOMER, NOW);
+        order.addLine(new ProductId("P-100"), new Quantity(1),
+                Money.yen(400_000));
 
         assertThatThrownBy(() ->
-                        order.addLine(new ProductId("P-200"), new Quantity(1), Money.yen(200_000)))
+                        order.addLine(new ProductId("P-200"),
+                                new Quantity(1),
+                                Money.yen(200_000)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("上限");
     }
+    // #endregion
 
+    // #region keeps-lines
     @Test
     @DisplayName("上限を超える追加を拒んでも、それまでの明細は残る")
     void keepsExistingLinesAfterRejection() {
-        Order order = Order.place(new OrderId("O-006"), CUSTOMER, NOW);
-        order.addLine(new ProductId("P-100"), new Quantity(1), Money.yen(400_000));
+        Order order =
+                Order.place(new OrderId("O-006"), CUSTOMER, NOW);
+        order.addLine(new ProductId("P-100"), new Quantity(1),
+                Money.yen(400_000));
 
         assertThatThrownBy(() ->
-                        order.addLine(new ProductId("P-200"), new Quantity(1), Money.yen(200_000)))
+                        order.addLine(new ProductId("P-200"),
+                                new Quantity(1),
+                                Money.yen(200_000)))
                 .isInstanceOf(IllegalStateException.class);
 
         assertThat(order.lines()).hasSize(1);
         assertThat(order.total()).isEqualTo(Money.yen(400_000));
     }
+    // #endregion
 
+    // #region identity
     @Test
-    @DisplayName("同じ識別子の注文は、明細が違っても同じ注文として扱う")
+    @DisplayName(
+            "同じ識別子の注文は、明細が違っても同じ注文として扱う")
     void identityIsDecidedByIdAlone() {
-        Order one = Order.place(new OrderId("O-007"), CUSTOMER, NOW);
-        Order other = Order.place(new OrderId("O-007"), CUSTOMER, NOW);
-        other.addLine(new ProductId("P-100"), new Quantity(1), Money.yen(980));
+        Order one =
+                Order.place(new OrderId("O-007"), CUSTOMER, NOW);
+        Order other =
+                Order.place(new OrderId("O-007"), CUSTOMER, NOW);
+        other.addLine(new ProductId("P-100"), new Quantity(1),
+                Money.yen(980));
 
         assertThat(one).isEqualTo(other);
         assertThat(one).hasSameHashCodeAs(other);
     }
+    // #endregion
 
     @Test
     @DisplayName("識別子が違えば別の注文として扱う")
