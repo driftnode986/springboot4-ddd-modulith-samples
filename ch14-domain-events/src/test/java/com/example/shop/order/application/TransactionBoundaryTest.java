@@ -78,7 +78,8 @@ class TransactionBoundaryTest {
     @Test
     @DisplayName("受信側が失敗しても、発行元の注文は残る")
     void publisherIsNotRolledBackWhenListenerFails() {
-        // 在庫のない商品を注文する。受信側は引き当てに失敗する。
+        // 在庫のない商品を注文する。
+        // 受信側は引き当てに失敗する。
         String missing = "P-"
                 + UUID.randomUUID().toString().substring(0, 8);
 
