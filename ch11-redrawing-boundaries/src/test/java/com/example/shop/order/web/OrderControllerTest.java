@@ -67,4 +67,23 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.detail").value(
                         "1 注文の上限を超えます: 800000 > 500000"));
     }
+
+    /** 入力そのものが成立していない例外は 400 になる（本には載せていない確認）。 */
+    @Test
+    @DisplayName("入力が成立しない注文は 400 で返す")
+    void returnsBadRequest() throws Exception {
+        willThrow(new IllegalArgumentException("明細が 1 件もありません"))
+                .given(placeOrderService)
+                .place(any(PlaceOrderCommand.class));
+
+        mvc.perform(post("/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-API-Version", "1")
+                        .content("""
+                            {"customerId":"C-001","lines":[]}
+                            """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail")
+                        .value("明細が 1 件もありません"));
+    }
 }

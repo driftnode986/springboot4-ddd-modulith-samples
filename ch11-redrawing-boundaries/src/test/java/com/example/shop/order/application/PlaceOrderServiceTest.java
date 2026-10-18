@@ -30,6 +30,7 @@ class PlaceOrderServiceTest {
     private RecordingOrderRepository repository;
     private PlaceOrderService service;
 
+    // #region set-up
     @BeforeEach
     void setUp() {
         repository = new RecordingOrderRepository();
@@ -39,6 +40,7 @@ class PlaceOrderServiceTest {
                         Clock.fixed(FIXED, ZoneOffset.UTC),
                         new RecordingShipmentArrangement());
     }
+    // #endregion
 
     @Test
     @DisplayName("注文を受け付けると、保存された注文を識別子で取り出せる")
@@ -114,6 +116,7 @@ class PlaceOrderServiceTest {
         }
     }
 
+    // #region shipment-stub
     /** 出荷の手配を記録するだけのスタブ。 */
     static final class RecordingShipmentArrangement
             implements ShipmentArrangement {
@@ -124,4 +127,5 @@ class PlaceOrderServiceTest {
             return new ShipmentId("S-001");
         }
     }
+    // #endregion
 }

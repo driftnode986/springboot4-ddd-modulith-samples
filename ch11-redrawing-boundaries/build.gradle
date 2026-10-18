@@ -19,7 +19,9 @@ repositories {
 }
 
 ext {
+    // #region modulith-version
     springModulithVersion = '2.1.1'
+    // #endregion
     // Boot 4.1.1 の Tomcat・Jackson には既知の脆弱性がある。
     // 修正済みの版に上げる（Boot が追いついたら外す）
     set('tomcat.version', '11.0.27')
@@ -29,14 +31,18 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // #region modulith-core
     implementation 'org.springframework.modulith:spring-modulith-core'
+    // #endregion
     implementation 'org.springframework.boot:spring-boot-flyway'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // #region modulith-test
     testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
+    // #endregion
     testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
@@ -51,11 +57,13 @@ tasks.named('test') {
     }
 }
 
+// #region modulith-bom
 dependencyManagement {
     imports {
         mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
     }
 }
+// #endregion
 
 // 1行の長さを確かめる（設定は config/checkstyle/checkstyle.xml）
 checkstyle {
