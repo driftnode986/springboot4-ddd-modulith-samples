@@ -39,9 +39,12 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // #region testcontainers
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
-    testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation(
+        'org.springframework.boot:spring-boot-testcontainers')
+    testImplementation(
+        'org.testcontainers:testcontainers-junit-jupiter')
+    testImplementation(
+        'org.testcontainers:testcontainers-postgresql')
     // #endregion
 }
 // #endregion
