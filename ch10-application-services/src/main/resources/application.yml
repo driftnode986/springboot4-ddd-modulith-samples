@@ -1,11 +1,9 @@
-# #region apiversion
 spring:
   mvc:
     apiversion:
       use:
         header: X-API-Version
       required: true
-# #endregion
   flyway:
     locations: classpath:db/migration/order
   jpa:
