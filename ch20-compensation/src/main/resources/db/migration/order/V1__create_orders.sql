@@ -1,3 +1,5 @@
+-- モジュール order のスキーマ。order は SQL の予約語なので
+-- ordering と名づける。
 CREATE SCHEMA IF NOT EXISTS ordering;
 
 CREATE TABLE ordering.orders (
