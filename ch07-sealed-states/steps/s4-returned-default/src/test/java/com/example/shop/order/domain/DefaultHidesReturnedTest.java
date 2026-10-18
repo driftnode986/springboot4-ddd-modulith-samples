@@ -9,13 +9,15 @@ import org.junit.jupiter.api.Test;
 
 class DefaultHidesReturnedTest {
 
-    private static final Instant T0 = Instant.parse("2026-08-06T10:00:00Z");
+    private static final Instant T0 =
+            Instant.parse("2026-08-06T10:00:00Z");
 
     @Test
     @DisplayName("default があると、扱っていない返品も「処理中」と表示される")
     void defaultがあると返品も処理中になる() {
         OrderState returned = new Returned(T0, "サイズ違い");
 
-        assertThat(OrderStateView.label(returned)).isEqualTo("処理中");
+        assertThat(OrderStateView.label(returned))
+                .isEqualTo("処理中");
     }
 }

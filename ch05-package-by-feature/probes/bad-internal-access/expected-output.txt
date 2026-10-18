@@ -1,1 +1,4 @@
-org.springframework.modulith.core.Violations: - Module 'order' depends on module 'inventory' via com.example.shop.order.application.BadInternalAccess -> com.example.shop.inventory.domain.Stock. Allowed targets: inventory :: spi, payment :: spi.
+org.springframework.modulith.core.Violations: - Module 'order' depends on non-exposed type com.example.shop.inventory.domain.Stock within module 'inventory'!
+Stock declares parameter Stock.touch(Stock) in (BadInternalAccess.java:0)
+- Module 'order' depends on non-exposed type com.example.shop.inventory.domain.Stock within module 'inventory'!
+Method <com.example.shop.order.application.BadInternalAccess.touch(com.example.shop.inventory.domain.Stock)> has parameter of type <com.example.shop.inventory.domain.Stock> in (BadInternalAccess.java:0)

@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class StatesTest {
 
-    private static final Instant T0 = Instant.parse("2026-08-06T10:00:00Z");
+    private static final Instant T0 =
+            Instant.parse("2026-08-06T10:00:00Z");
 
     @Test
     @DisplayName("受付済は決済の識別子を持たない（別の型になる）")
@@ -27,7 +28,9 @@ class StatesTest {
         Paid paid = new Paid(T0, new ReservationId("R-1"),
                 new PaymentId("PAY-1"));
 
-        assertThat(paid.reservationId()).isEqualTo(new ReservationId("R-1"));
-        assertThat(paid.paymentId()).isEqualTo(new PaymentId("PAY-1"));
+        assertThat(paid.reservationId())
+                .isEqualTo(new ReservationId("R-1"));
+        assertThat(paid.paymentId())
+                .isEqualTo(new PaymentId("PAY-1"));
     }
 }

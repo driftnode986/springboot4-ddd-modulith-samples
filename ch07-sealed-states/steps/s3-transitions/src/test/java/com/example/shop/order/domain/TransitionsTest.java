@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class TransitionsTest {
 
-    private static final Instant T0 = Instant.parse("2026-08-06T10:00:00Z");
+    private static final Instant T0 =
+            Instant.parse("2026-08-06T10:00:00Z");
 
     @Test
     @DisplayName("受付済から引当・支払いを経て確定に進み、事実を引き継ぐ")
@@ -21,8 +22,11 @@ class TransitionsTest {
                 .confirm(T0.plusSeconds(60));
 
         assertThat(confirmed.acceptedAt()).isEqualTo(T0);
-        assertThat(confirmed.reservationId()).isEqualTo(new ReservationId("R-1"));
-        assertThat(confirmed.paymentId()).isEqualTo(new PaymentId("PAY-1"));
-        assertThat(confirmed.confirmedAt()).isEqualTo(T0.plusSeconds(60));
+        assertThat(confirmed.reservationId())
+                .isEqualTo(new ReservationId("R-1"));
+        assertThat(confirmed.paymentId())
+                .isEqualTo(new PaymentId("PAY-1"));
+        assertThat(confirmed.confirmedAt())
+                .isEqualTo(T0.plusSeconds(60));
     }
 }

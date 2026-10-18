@@ -35,7 +35,8 @@ public sealed interface OrderState {
 
         // #region reserved-pay
         public Paid pay(PaymentId paymentId) {
-            return new Paid(acceptedAt, reservationId, paymentId);
+            return new Paid(acceptedAt, reservationId,
+                    paymentId);
         }
     }
 
