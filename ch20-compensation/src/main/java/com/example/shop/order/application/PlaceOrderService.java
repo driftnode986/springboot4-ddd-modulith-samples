@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PlaceOrderService {
 
+    // #region fields
     private final OrderRepository orders;
     private final Clock clock;
     private final ShipmentArrangement shipments;
@@ -41,6 +42,7 @@ public class PlaceOrderService {
         this.payments = payments;
         this.events = events;
     }
+    // #endregion
 
     @Transactional
     public OrderId place(PlaceOrderCommand command) {
@@ -80,17 +82,21 @@ public class PlaceOrderService {
         return order.id();
     }
 
+    // #region request-payment
     /**
      * 請求を頼む。成立しなかったときに戻す対象を一緒に渡す。
      *
-     * <p>引き当てはイベントで別のトランザクションに渡してあるので、ここで例外が起きても
-     * データベースは在庫を戻さない。戻す処理は支払いの側から改めて頼むことになる。
+     * <p>引き当ては、イベントで別のトランザクションに
+     * 渡してある。そのため、ここで例外が起きても
+     * データベースは在庫を戻さない。
+     * 戻す処理は支払いの側から改めて頼むことになる。
      */
     @Transactional
     public void requestPayment(OrderId orderId) {
         Order order = orders.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "注文がありません: " + orderId.value()));
+                        "注文がありません: "
+                                + orderId.value()));
 
         payments.request(
                 UUID.fromString(order.id().value()),
@@ -101,4 +107,5 @@ public class PlaceOrderService {
                                 line.quantity().value()))
                         .toList());
     }
+    // #endregion
 }

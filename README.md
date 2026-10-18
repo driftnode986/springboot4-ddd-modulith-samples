@@ -79,9 +79,9 @@ cd ../ch09-repositories
 | | |
 |---|---|
 | Java | 21 (LTS) |
-| Spring Boot | 4.1.0 |
-| Spring Framework | 7.0.8 |
-| Spring Modulith | 2.1.0 |
+| Spring Boot | 4.1.1（Tomcat 11.0.27・Jackson 3.1.7 に上書き。理由は第2章） |
+| Spring Framework | 7.0.9 |
+| Spring Modulith | 2.1.1 |
 | Gradle | 9.5.0 (wrapper 同梱・Groovy DSL) |
 | PostgreSQL | 18 (Testcontainers が起動します) |
 
