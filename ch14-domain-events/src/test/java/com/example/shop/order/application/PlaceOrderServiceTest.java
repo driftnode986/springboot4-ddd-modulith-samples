@@ -91,8 +91,10 @@ class PlaceOrderServiceTest {
         assertThat(repository.saveCount()).isZero();
     }
 
+    // #region publishes-items
     @Test
-    @DisplayName("注文を受け付けると、明細を載せた OrderPlaced を発表する")
+    @DisplayName("注文を受け付けると、"
+            + "明細を載せた OrderPlaced を発表する")
     void publishesOrderPlacedWithItems() {
         PlaceOrderCommand command = new PlaceOrderCommand(
                 "C-001",
@@ -114,6 +116,7 @@ class PlaceOrderServiceTest {
                 new OrderPlaced.Item("P-001", 2),
                 new OrderPlaced.Item("P-002", 1));
     }
+    // #endregion
 
     /** 保存が呼ばれた回数まで見たいので、第9章のインメモリ実装に数えるだけの機能を足した。 */
     static class RecordingOrderRepository
