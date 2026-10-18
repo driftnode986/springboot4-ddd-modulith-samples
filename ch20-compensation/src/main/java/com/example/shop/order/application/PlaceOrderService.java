@@ -89,7 +89,8 @@ public class PlaceOrderService {
      * <p>引き当ては、イベントで別のトランザクションに
      * 渡してある。そのため、ここで例外が起きても
      * データベースは在庫を戻さない。
-     * 戻す処理は支払いの側から改めて頼むことになる。
+     * 戻す処理は、支払いの側が成立しなかったことを発表し、
+     * 在庫の側がそれを受け取って行う。
      */
     @Transactional
     public void requestPayment(OrderId orderId) {

@@ -63,7 +63,7 @@ class OrderControllerTest {
                                        "quantity":1,
                                        "unitPriceYen":800000}]}
                             """))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.detail").value(
                         "1 注文の上限を超えます: 800000 > 500000"));
     }

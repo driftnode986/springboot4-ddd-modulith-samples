@@ -1,4 +1,4 @@
-# 詰まったイベントの見張り。spring.profiles.active=staleness で有効になる。
+# 停滞したイベントの見張り。spring.profiles.active=staleness で有効になる。
 # #region staleness
 spring:
   modulith:

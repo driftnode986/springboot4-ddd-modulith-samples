@@ -19,7 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * 詰まったまま動かないイベントを、監視が失敗として拾い上げるかどうかを確かめる。
+ * 停滞したまま動かないイベントを、監視が失敗として拾い上げるかどうかを確かめる。
  *
  * <p>監視は 3 つの時間のどれかを 0 でない値にしたときだけ動き出す。設定しなければ
  * 定期実行そのものが登録されない。
@@ -104,7 +104,7 @@ class StalenessMonitorTest {
     // #region left-alone
     @Test
     @DisplayName("時間を設定しなければ、"
-            + "詰まったイベントは発表済みのまま放置される")
+            + "停滞したイベントは発表済みのまま放置される")
     void stalePublicationIsLeftAloneWithoutConfiguration() {
         try (ConfigurableApplicationContext context = start()) {
             JdbcTemplate jdbc =
@@ -124,7 +124,7 @@ class StalenessMonitorTest {
     // #region marked-failed
     @Test
     @DisplayName("時間を設定すると、"
-            + "詰まったイベントが失敗として拾い上げられる")
+            + "停滞したイベントが失敗として拾い上げられる")
     void stalePublicationIsMarkedFailedWhenConfigured() {
         try (ConfigurableApplicationContext context =
                 start(
@@ -147,7 +147,7 @@ class StalenessMonitorTest {
 
     @Test
     @DisplayName("application-staleness.yml の設定でも、"
-            + "詰まったイベントが失敗として拾い上げられる")
+            + "停滞したイベントが失敗として拾い上げられる")
     void stalenessProfileMarksStalePublicationFailed() {
         try (ConfigurableApplicationContext context =
                 start("spring.profiles.active=staleness")) {
