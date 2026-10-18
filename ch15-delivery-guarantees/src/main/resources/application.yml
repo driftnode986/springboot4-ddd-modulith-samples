@@ -1,23 +1,13 @@
-# 本の節ごとに設定を見せるため、--- で文書を分けている。
-# Spring Boot はすべての文書を上から順に読み、1 つの設定として扱う。
-# #region flyway
 spring:
   flyway:
     locations:
       - classpath:db/migration/order
       - classpath:db/migration/inventory
       - classpath:db/migration/events
-# #endregion
----
-# 起動し直したときに、未完了のイベントを配り直す。既定は無効。
-# #region republish
-spring:
   modulith:
     events:
+      # 起動し直したときに、未完了のイベントを配り直す。既定は無効。
       republish-outstanding-events-on-restart: true
-# #endregion
----
-spring:
   jpa:
     hibernate:
       ddl-auto: validate

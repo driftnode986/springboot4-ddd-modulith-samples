@@ -24,18 +24,14 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import jakarta.persistence.EntityManagerFactory;
 
-// #region fetch-count-class
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
-@TestPropertySource(properties = "spring.jpa.properties."
-        + "hibernate.generate_statistics=true")
+@TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 class OrderFetchSqlCountTest {
-    // #endregion
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
     @Autowired
     private OrderRepository repository;
@@ -43,37 +39,23 @@ class OrderFetchSqlCountTest {
     @Autowired
     private EntityManagerFactory entityManagerFactory;
 
-    // #region fetch-count-test
     @Test
-    @DisplayName("明細付きの注文を取り出すと"
-            + "発行される問い合わせは1本")
+    @DisplayName("明細付きの注文を取り出すと発行される問い合わせは1本")
     void aggregateIsLoadedInOneStatement() {
-        // 明細を 3 件持つ注文を保存しておく
-        // #endregion
         OrderId id = new OrderId("ORD-200");
-        Order order = Order.place(
-                id,
-                new CustomerId("CUS-1"),
-                Instant.parse("2026-01-01T00:00:00Z"));
-        order.addLine(new ProductId("P-1"), new Quantity(1),
-                Money.yen(1000));
-        order.addLine(new ProductId("P-2"), new Quantity(2),
-                Money.yen(2000));
-        order.addLine(new ProductId("P-3"), new Quantity(3),
-                Money.yen(3000));
+        Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
+        order.addLine(new ProductId("P-1"), new Quantity(1), Money.yen(1000));
+        order.addLine(new ProductId("P-2"), new Quantity(2), Money.yen(2000));
+        order.addLine(new ProductId("P-3"), new Quantity(3), Money.yen(3000));
         repository.save(order);
 
-        // #region fetch-count-assert
-        Statistics statistics = entityManagerFactory
-                .unwrap(SessionFactory.class)
-                .getStatistics();
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
         statistics.clear();
 
         Order found = repository.findById(id).orElseThrow();
 
         assertThat(found.lines()).hasSize(3);
-        assertThat(statistics.getPrepareStatementCount())
-                .isEqualTo(1);
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
     }
 }
-// #endregion

@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 /** ドメインが決めたインターフェースを、JPA で満たす。 */
-// #region jpa-order-repository
 @Repository
 class JpaOrderRepository implements OrderRepository {
 
@@ -24,8 +23,6 @@ class JpaOrderRepository implements OrderRepository {
 
     @Override
     public Optional<Order> findById(OrderId id) {
-        return jpa.findWithLinesById(id.value())
-                .map(OrderMapper::toDomain);
+        return jpa.findWithLinesById(id.value()).map(OrderMapper::toDomain);
     }
 }
-// #endregion

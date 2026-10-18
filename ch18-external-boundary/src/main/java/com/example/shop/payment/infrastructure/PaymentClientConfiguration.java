@@ -9,9 +9,6 @@ import org.springframework.web.service.registry.ImportHttpServices;
  * <p>{@code group} に付けた名前が、そのまま設定ファイル側の
  * {@code spring.http.serviceclient.<name>} と対応する。
  */
-// #region configuration
 @Configuration
-@ImportHttpServices(
-        group = "payment", types = PaymentApiClient.class)
+@ImportHttpServices(group = "payment", types = PaymentApiClient.class)
 class PaymentClientConfiguration {}
-// #endregion

@@ -6,8 +6,7 @@ import org.springframework.modulith.core.ApplicationModules;
 
 class ModularityTests {
 
-    static final ApplicationModules modules =
-            ApplicationModules.of(ShopApplication.class);
+    static final ApplicationModules modules = ApplicationModules.of(ShopApplication.class);
 
     @Test
     @DisplayName("モジュール構造が規約を満たしている")

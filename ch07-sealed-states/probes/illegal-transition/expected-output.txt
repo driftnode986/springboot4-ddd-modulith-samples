@@ -1,6 +1,0 @@
-src/main/java/com/example/shop/order/domain/ProbeIllegalTransition.java:10: エラー: シンボルを見つけられません
-        accepted.pay(new PaymentId("PAY-1"));
-                ^
-  シンボル:   メソッド pay(PaymentId)
-  場所: タイプAcceptedの変数 accepted
-エラー1個

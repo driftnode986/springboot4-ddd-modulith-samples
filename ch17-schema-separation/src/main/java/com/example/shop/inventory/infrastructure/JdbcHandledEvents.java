@@ -25,15 +25,11 @@ class JdbcHandledEvents implements HandledEvents {
         this.clock = clock;
     }
 
-    // #region record-if-first
     @Override
-    public boolean recordIfFirst(
-            String eventId, String handler) {
+    public boolean recordIfFirst(String eventId, String handler) {
         try {
             jdbc.update(
-                    "INSERT INTO inventory.handled_events"
-                            + " (event_id, handler, handled_at)"
-                            + " VALUES (?, ?, ?)",
+                    "INSERT INTO inventory.handled_events (event_id, handler, handled_at) VALUES (?, ?, ?)",
                     eventId,
                     handler,
                     Timestamp.from(clock.instant()));
@@ -42,5 +38,4 @@ class JdbcHandledEvents implements HandledEvents {
             return false;
         }
     }
-    // #endregion
 }

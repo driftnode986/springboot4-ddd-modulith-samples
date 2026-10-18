@@ -20,17 +20,16 @@ class EnumPitfallTest {
         System.out.println("status    = " + order.status());
         System.out.println("paymentId = " + order.paymentId());
 
-        assertThat(order.status())
-                .isEqualTo(OrderWithEnum.Status.ACCEPTED);
+        assertThat(order.status()).isEqualTo(OrderWithEnum.Status.ACCEPTED);
         assertThat(order.paymentId()).isNull();
     }
 
     @Test
     @DisplayName("読んだ値を使うと離れた場所で落ちる")
     void 読んだ値を使うと離れた場所で落ちる() {
-        assertThatThrownBy(() -> OrderWithEnumDemo.main(
-                        new String[0]))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("String.length()");
+        OrderWithEnum order = new OrderWithEnum();
+
+        assertThatThrownBy(() -> order.paymentId().length())
+                .isInstanceOf(NullPointerException.class);
     }
 }

@@ -28,39 +28,28 @@ class RestoreLimitProbeTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
     @Autowired
     private OrderRepository repository;
 
-    // #region jpa-field
     @Autowired
     private OrderJpaRepository jpa;
-    // #endregion
 
-    // #region restore-over-limit
     @Test
     @DisplayName("上限を超える注文が表にあっても読み戻せる")
     void orderOverLimitIsStillRestorable() {
-        // 上限を引き下げたあとの既存データに相当する状態を、
-        // 表に直接作る
+        // 上限を引き下げたあとの既存データに相当する状態を、表に直接作る
         OrderEntity entity = new OrderEntity("ORD-OVER");
         entity.setCustomerId("CUS-1");
         entity.setState("ACCEPTED");
-        entity.setAcceptedAt(
-                Instant.parse("2026-01-01T00:00:00Z"));
-        entity.getLines().add(new OrderLineEntity(
-                "P-1", 1, new BigDecimal("400000.00"), "JPY"));
-        entity.getLines().add(new OrderLineEntity(
-                "P-2", 1, new BigDecimal("400000.00"), "JPY"));
+        entity.setAcceptedAt(Instant.parse("2026-01-01T00:00:00Z"));
+        entity.getLines().add(new OrderLineEntity("P-1", 1, new BigDecimal("400000.00"), "JPY"));
+        entity.getLines().add(new OrderLineEntity("P-2", 1, new BigDecimal("400000.00"), "JPY"));
         jpa.saveAndFlush(entity);
 
-        Order found = repository
-                .findById(new OrderId("ORD-OVER"))
-                .orElseThrow();
+        Order found = repository.findById(new OrderId("ORD-OVER")).orElseThrow();
 
         assertThat(found.total()).isEqualTo(Money.yen(800_000));
     }
-    // #endregion
 }

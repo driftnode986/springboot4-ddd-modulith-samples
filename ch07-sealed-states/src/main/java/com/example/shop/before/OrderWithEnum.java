@@ -1,10 +1,17 @@
 package com.example.shop.before;
 
-// #region class
+/**
+ * 状態を enum で持った場合の形。状態ごとに必要な項目が違うため、
+ * どの状態でも使わないフィールドを抱えることになる。
+ */
 public final class OrderWithEnum {
 
     public enum Status {
-        ACCEPTED, RESERVED, PAID, CONFIRMED, CANCELLED
+        ACCEPTED,
+        RESERVED,
+        PAID,
+        CONFIRMED,
+        CANCELLED
     }
 
     private Status status;
@@ -28,5 +35,9 @@ public final class OrderWithEnum {
         this.status = Status.PAID;
         this.paymentId = paymentId;
     }
+
+    public void markCancelled(String reason) {
+        this.status = Status.CANCELLED;
+        this.cancelReason = reason;
+    }
 }
-// #endregion

@@ -20,6 +20,5 @@ CREATE TABLE order_lines (
     unit_amount   NUMERIC(12, 2) NOT NULL,
     unit_currency VARCHAR(3)     NOT NULL,
     CONSTRAINT pk_order_lines PRIMARY KEY (id),
-    CONSTRAINT fk_order_lines_order FOREIGN KEY (order_id)
-        REFERENCES orders (id)
+    CONSTRAINT fk_order_lines_order FOREIGN KEY (order_id) REFERENCES orders (id)
 );

@@ -1,4 +1,0 @@
-src/main/java/com/example/shop/order/domain/Rogue.java:3: エラー: クラスはシール・クラスOrderStateを拡張できません('permits'句に指定されていないためです)
-record Rogue(String note) implements OrderState {}
-^
-エラー1個

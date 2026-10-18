@@ -1,9 +1,0 @@
-# 停滞したイベントの見張り。spring.profiles.active=staleness で有効になる。
-# #region staleness
-spring:
-  modulith:
-    events:
-      staleness:
-        published: 1m
-        check-interval: 1s
-# #endregion

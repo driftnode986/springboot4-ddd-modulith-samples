@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 class StockTest {
 
-    // #region reject-beyond
     @Test
     @DisplayName("手元にある数より多くは引き当てられない")
     void rejectsReservationBeyondQuantity() {
@@ -20,7 +19,6 @@ class StockTest {
 
         assertThat(stock.quantity()).isEqualTo(3);
     }
-    // #endregion
 
     @Test
     @DisplayName("手元にある数までは引き当てられる")

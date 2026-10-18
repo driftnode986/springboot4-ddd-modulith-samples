@@ -13,11 +13,9 @@ class CustomerIdTest {
     @Test
     @DisplayName("値があれば生成できる")
     void 値があれば生成できる() {
-        assertThat(new CustomerId("C-1").value())
-                .isEqualTo("C-1");
+        assertThat(new CustomerId("C-1").value()).isEqualTo("C-1");
     }
 
-    // #region blank
     @ParameterizedTest
     @DisplayName("空の ID は生成できない")
     @ValueSource(strings = {"", " ", "　"})
@@ -25,5 +23,4 @@ class CustomerIdTest {
         assertThatThrownBy(() -> new CustomerId(invalid))
                 .isInstanceOf(IllegalArgumentException.class);
     }
-    // #endregion
 }

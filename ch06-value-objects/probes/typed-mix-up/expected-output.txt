@@ -1,5 +1,0 @@
-src/main/java/com/example/shop/order/domain/PlaceOrder.java:14: エラー: 不適合な型: ProductIdをCustomerIdに変換できません:
-        placeOrder(product, customer, new Quantity(1));
-                   ^
-ノート: 一部のメッセージは簡略化されています。-Xdiags:verboseで再コンパイルして完全な出力を取得してください
-エラー1個

@@ -6,7 +6,5 @@ package com.example.shop.order.spi;
  * <p>過去に起きたことなので、あとから書き換えられない値として持つ。
  * 受け取る側が必要とする分だけを載せ、注文集約そのものは渡さない。
  */
-// #region record
 public record OrderPlaced(String orderId, String customerId) {
 }
-// #endregion

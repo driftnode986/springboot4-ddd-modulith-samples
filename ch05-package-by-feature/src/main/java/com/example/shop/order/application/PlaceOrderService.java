@@ -1,4 +1,3 @@
-// #region head
 package com.example.shop.order.application;
 
 import com.example.shop.inventory.spi.StockReservation;
@@ -7,9 +6,7 @@ import com.example.shop.order.domain.OrderRepository;
 import com.example.shop.payment.spi.PaymentRequest;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
-// #endregion
 
-// #region class
 @Service
 public class PlaceOrderService {
 
@@ -17,15 +14,13 @@ public class PlaceOrderService {
     private final StockReservation stocks;
     private final PaymentRequest payments;
 
-    PlaceOrderService(OrderRepository orders,
-            StockReservation stocks, PaymentRequest payments) {
+    PlaceOrderService(OrderRepository orders, StockReservation stocks, PaymentRequest payments) {
         this.orders = orders;
         this.stocks = stocks;
         this.payments = payments;
     }
 
-    public UUID place(String customerId, String sku,
-            int quantity) {
+    public UUID place(String customerId, String sku, int quantity) {
         var order = new Order(UUID.randomUUID(), customerId);
         orders.save(order);
         stocks.reserve(sku, quantity);
@@ -33,4 +28,3 @@ public class PlaceOrderService {
         return order.id();
     }
 }
-// #endregion

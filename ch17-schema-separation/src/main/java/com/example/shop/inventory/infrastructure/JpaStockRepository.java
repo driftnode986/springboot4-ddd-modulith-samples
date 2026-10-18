@@ -5,7 +5,6 @@ import com.example.shop.inventory.domain.StockRepository;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
-// #region jpa-stock-repository
 @Repository
 class JpaStockRepository implements StockRepository {
 
@@ -17,18 +16,14 @@ class JpaStockRepository implements StockRepository {
 
     @Override
     public Optional<Stock> findBySku(String sku) {
-        return jpa.findById(sku)
-                .map(entity -> new Stock(
-                        entity.getSku(), entity.getQuantity()));
+        return jpa.findById(sku).map(entity -> new Stock(entity.getSku(), entity.getQuantity()));
     }
 
     @Override
     public void save(Stock stock) {
-        StockEntity entity = jpa.findById(stock.sku())
-                .orElseGet(() ->
-                        new StockEntity(stock.sku(), 0));
+        StockEntity entity =
+                jpa.findById(stock.sku()).orElseGet(() -> new StockEntity(stock.sku(), 0));
         entity.setQuantity(stock.quantity());
         jpa.save(entity);
     }
 }
-// #endregion

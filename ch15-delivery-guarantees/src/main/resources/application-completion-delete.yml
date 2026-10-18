@@ -1,7 +1,0 @@
-# 完了したイベントの行を消す。spring.profiles.active=completion-delete で有効になる。
-# #region completion-delete
-spring:
-  modulith:
-    events:
-      completion-mode: delete
-# #endregion

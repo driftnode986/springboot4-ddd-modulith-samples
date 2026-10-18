@@ -18,45 +18,41 @@ import org.springframework.stereotype.Component;
  * <p>引き当てと同じく、同じ発表が 2 回届くことを前提にしている。戻しは打ち消しではなく
  * 加算なので、二度実行すると在庫が実際より増える。記録を見て 1 回目だけを通す。
  */
-// #region listener-fields
 @Component
 public class ReleaseStockOnPaymentFailed {
 
-    private static final Logger log = LoggerFactory.getLogger(
-            ReleaseStockOnPaymentFailed.class);
-    private static final String HANDLER =
-            "inventory.ReleaseStockOnPaymentFailed";
+    private static final Logger log = LoggerFactory.getLogger(ReleaseStockOnPaymentFailed.class);
+    private static final String HANDLER = "inventory.ReleaseStockOnPaymentFailed";
 
     private final StockRepository stocks;
     private final HandledEvents handledEvents;
 
-    ReleaseStockOnPaymentFailed(
-            StockRepository stocks,
-            HandledEvents handledEvents) {
+    ReleaseStockOnPaymentFailed(StockRepository stocks, HandledEvents handledEvents) {
         this.stocks = stocks;
         this.handledEvents = handledEvents;
     }
-    // #endregion
 
-    // #region listener-on
     @ApplicationModuleListener
     void on(PaymentFailed event) {
-        if (!handledEvents.recordIfFirst(
-                event.eventId(), HANDLER)) {
-            log.info("戻し済みのイベントなので読み飛ばします"
-                    + " eventId={}", event.eventId());
+        if (!handledEvents.recordIfFirst(event.eventId(), HANDLER)) {
+            log.info("戻し済みのイベントなので読み飛ばします eventId={}", event.eventId());
             return;
         }
 
         for (PaymentFailed.Item item : event.items()) {
-            Stock stock = stocks.findBySku(item.productId())
-                    .orElseThrow(() ->
-                            new IllegalStateException(
-                                    "在庫がありません: "
-                                    + item.productId()));
+            Stock stock =
+                    stocks.findBySku(item.productId())
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalStateException(
+                                                    "在庫がありません: " + item.productId()));
             stock.release(item.quantity());
             stocks.save(stock);
+            log.info(
+                    "引き当てを戻しました sku={} 残り={} 理由={}",
+                    stock.sku(),
+                    stock.quantity(),
+                    event.reason());
         }
     }
 }
-// #endregion

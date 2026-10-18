@@ -29,14 +29,12 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 /** fetch join を使わないと問い合わせが何本になるかの確認用。 */
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
-@TestPropertySource(properties = "spring.jpa.properties"
-        + ".hibernate.generate_statistics=true")
+@TestPropertySource(properties = "spring.jpa.properties.hibernate.generate_statistics=true")
 class NPlusOneProbeTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
     @Autowired
     private OrderRepository repository;
@@ -55,34 +53,26 @@ class NPlusOneProbeTest {
     @DisplayName("fetch_join_を使わないと注文と明細で問い合わせが2本になる")
     void withoutFetchJoinTwoStatementsAreIssued() {
         OrderId id = new OrderId("ORD-300");
-        Order order = Order.place(id, new CustomerId("CUS-1"),
-                Instant.parse("2026-01-01T00:00:00Z"));
-        order.addLine(new ProductId("P-1"), new Quantity(1),
-                Money.yen(1000));
-        order.addLine(new ProductId("P-2"), new Quantity(2),
-                Money.yen(2000));
+        Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
+        order.addLine(new ProductId("P-1"), new Quantity(1), Money.yen(1000));
+        order.addLine(new ProductId("P-2"), new Quantity(2), Money.yen(2000));
         repository.save(order);
 
-        // #region flush-clear
-        // 保存したものが持ち越されていると問い合わせが
-        // 出ないので、いったん書き出してから持ち越しを捨てる。
+        // 保存したものが持ち越されていると問い合わせが出ないので、
+        // いったん書き出してから持ち越しを捨てる。
         entityManager.flush();
         entityManager.clear();
-        // #endregion
 
-        Statistics statistics = entityManagerFactory
-                .unwrap(SessionFactory.class).getStatistics();
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
         statistics.clear();
 
-        OrderEntity entity =
-                jpa.findById(id.value()).orElseThrow();
+        OrderEntity entity = jpa.findById(id.value()).orElseThrow();
         long afterFind = statistics.getPrepareStatementCount();
         int size = entity.getLines().size();
         long afterLines = statistics.getPrepareStatementCount();
 
         assertThat(size).isEqualTo(2);
-        System.out.println("注文だけ = " + afterFind
-                + " 本 / 明細に触れたあと = " + afterLines
-                + " 本");
+        System.out.println("注文だけ = " + afterFind + " 本 / 明細に触れたあと = " + afterLines + " 本");
     }
 }

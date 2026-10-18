@@ -8,24 +8,17 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-// #region arrange-shipment
 @Service
 class ArrangeShipmentService implements ShipmentArrangement {
 
-    /**
-     * 手配した出荷。保存は第17章で扱う。
-     * ここでは配送先の検査が働くことだけを示す。
-     */
+    /** 保存は第17章で扱う。ここでは配送先の検査が働くことだけを示す。 */
     private final List<Shipment> arranged = new ArrayList<>();
 
     @Override
     public ShipmentId arrange(String orderId, String address) {
-        Shipment shipment = new Shipment(
-                new ShipmentId(UUID.randomUUID().toString()),
-                orderId,
-                address);
+        Shipment shipment =
+                new Shipment(new ShipmentId(UUID.randomUUID().toString()), orderId, address);
         arranged.add(shipment);
         return shipment.id();
     }
 }
-// #endregion

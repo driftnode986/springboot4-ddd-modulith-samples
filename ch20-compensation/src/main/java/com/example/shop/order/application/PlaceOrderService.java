@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PlaceOrderService {
 
-    // #region fields
     private final OrderRepository orders;
     private final Clock clock;
     private final ShipmentArrangement shipments;
@@ -42,7 +41,6 @@ public class PlaceOrderService {
         this.payments = payments;
         this.events = events;
     }
-    // #endregion
 
     @Transactional
     public OrderId place(PlaceOrderCommand command) {
@@ -65,48 +63,38 @@ public class PlaceOrderService {
         orders.save(order);
 
         // 出荷は直接呼ぶ。注文と同じトランザクションで動く。
-        shipments.arrange(
-                order.id().value(), command.address());
+        shipments.arrange(order.id().value(), command.address());
 
         // 在庫はイベントで繋ぐ。受け取る相手をここでは知らない。
-        events.publishEvent(new OrderPlaced(
-                UUID.randomUUID().toString(),
-                order.id().value(),
-                command.customerId(),
-                command.lines().stream()
-                        .map(line -> new OrderPlaced.Item(
-                                line.productId(),
-                                line.quantity()))
-                        .toList()));
+        events.publishEvent(
+                new OrderPlaced(
+                        UUID.randomUUID().toString(),
+                        order.id().value(),
+                        command.customerId(),
+                        command.lines().stream()
+                                .map(line -> new OrderPlaced.Item(line.productId(), line.quantity()))
+                                .toList()));
 
         return order.id();
     }
 
-    // #region request-payment
     /**
      * 請求を頼む。成立しなかったときに戻す対象を一緒に渡す。
      *
-     * <p>引き当ては、イベントで別のトランザクションに
-     * 渡してある。そのため、ここで例外が起きても
-     * データベースは在庫を戻さない。
-     * 戻す処理は、支払いの側が成立しなかったことを発表し、
-     * 在庫の側がそれを受け取って行う。
+     * <p>引き当てはイベントで別のトランザクションに渡してあるので、ここで例外が起きても
+     * データベースは在庫を戻さない。戻す処理は支払いの側から改めて頼むことになる。
      */
     @Transactional
     public void requestPayment(OrderId orderId) {
         Order order = orders.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "注文がありません: "
-                                + orderId.value()));
+                .orElseThrow(() -> new IllegalArgumentException("注文がありません: " + orderId.value()));
 
         payments.request(
                 UUID.fromString(order.id().value()),
                 order.total().amount().longValue(),
-                order.lines().stream().map(line ->
-                        new PaymentRequest.Reserved(
-                                line.productId().value(),
-                                line.quantity().value()))
+                order.lines().stream()
+                        .map(line -> new PaymentRequest.Reserved(
+                                line.productId().value(), line.quantity().value()))
                         .toList());
     }
-    // #endregion
 }

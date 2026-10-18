@@ -1,6 +1,5 @@
 package com.example.shop;
 
-// #region layering-head
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -12,11 +11,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * モジュールの内側の層構造を検証する。
+ * ApplicationModules.verify() はモジュール間だけを見るため、ここが受け持つ。
+ */
 class LayeringTests {
 
     static final JavaClasses classes = new ClassFileImporter()
-            .withImportOption(
-                ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
             .importPackages("com.example.shop");
 
     @Test
@@ -24,25 +26,19 @@ class LayeringTests {
     void domainDoesNotDependOnInfrastructure() {
         noClasses()
                 .that().resideInAPackage("..domain..")
-                .should().dependOnClassesThat()
-                .resideInAPackage("..infrastructure..")
+                .should().dependOnClassesThat().resideInAPackage("..infrastructure..")
                 .check(classes);
     }
-// #endregion
 
-    // #region no-spring
     @Test
     @DisplayName("domain は Spring に依存しない")
     void domainDoesNotDependOnSpring() {
         noClasses()
                 .that().resideInAPackage("..domain..")
-                .should().dependOnClassesThat()
-                .resideInAPackage("org.springframework..")
+                .should().dependOnClassesThat().resideInAPackage("org.springframework..")
                 .check(classes);
     }
-    // #endregion
 
-    // #region service-annotated
     @Test
     @DisplayName("application のサービスは @Service を付ける")
     void applicationServicesAreAnnotated() {
@@ -52,19 +48,13 @@ class LayeringTests {
                 .should().beAnnotatedWith(Service.class)
                 .check(classes);
     }
-    // #endregion
 
-    // #region transactional-only
     @Test
     @DisplayName("@Transactional は application だけに付ける")
     void transactionalOnlyInApplication() {
         noClasses()
-                .that()
-                .resideOutsideOfPackage("..application..")
+                .that().resideOutsideOfPackage("..application..")
                 .should().beAnnotatedWith(Transactional.class)
                 .check(classes);
     }
-    // #endregion
-// #region layering-end
 }
-// #endregion

@@ -29,22 +29,17 @@ class JpaOrderRepositoryTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
-    // #region repository-field
     @Autowired
     private OrderRepository repository;
-    // #endregion
 
     @Test
     @DisplayName("保存した注文を識別子で取り出せる")
     void savedOrderIsFoundById() {
         OrderId id = new OrderId("ORD-100");
-        Order order = Order.place(id, new CustomerId("CUS-1"),
-                Instant.parse("2026-01-01T00:00:00Z"));
-        order.addLine(new ProductId("P-1"), new Quantity(2),
-                Money.yen(1500));
+        Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
+        order.addLine(new ProductId("P-1"), new Quantity(2), Money.yen(1500));
 
         repository.save(order);
 
@@ -53,47 +48,33 @@ class JpaOrderRepositoryTest {
         assertThat(found.lines()).hasSize(1);
     }
 
-    // #region money-round-trip
     @Test
     @DisplayName("金額を保存して読み直すと同じ金額と通貨になる")
     void moneySurvivesRoundTrip() {
         OrderId id = new OrderId("ORD-101");
-        Order order = Order.place(
-                id,
-                new CustomerId("CUS-1"),
-                Instant.parse("2026-01-01T00:00:00Z"));
-        order.addLine(new ProductId("P-1"), new Quantity(1),
-                Money.yen(1500));
+        Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
+        order.addLine(new ProductId("P-1"), new Quantity(1), Money.yen(1500));
         repository.save(order);
 
         Order found = repository.findById(id).orElseThrow();
 
         assertThat(found.total()).isEqualTo(Money.yen(1500));
     }
-    // #endregion
 
     @Test
     @DisplayName("支払済の注文を保存して読み直すと支払済のまま")
     void paidStateSurvivesRoundTrip() {
         OrderId id = new OrderId("ORD-102");
-        Order order = Order.place(id, new CustomerId("CUS-1"),
-                Instant.parse("2026-01-01T00:00:00Z"));
-        OrderState.Accepted accepted =
-                (OrderState.Accepted) order.state();
-        OrderState.Paid paid = accepted
-                .reserve(new ReservationId("RSV-1"))
-                .pay(new PaymentId("PAY-1"));
-        Order stored = Order.restore(
-                id, new CustomerId("CUS-1"), paid, List.of());
+        Order order = Order.place(id, new CustomerId("CUS-1"), Instant.parse("2026-01-01T00:00:00Z"));
+        OrderState.Accepted accepted = (OrderState.Accepted) order.state();
+        OrderState.Paid paid = accepted.reserve(new ReservationId("RSV-1")).pay(new PaymentId("PAY-1"));
+        Order stored = Order.restore(id, new CustomerId("CUS-1"), paid, List.of());
         repository.save(stored);
 
         Order found = repository.findById(id).orElseThrow();
 
-        assertThat(found.state())
-                .isInstanceOf(OrderState.Paid.class);
-        OrderState.Paid restored =
-                (OrderState.Paid) found.state();
-        assertThat(restored.paymentId())
-                .isEqualTo(new PaymentId("PAY-1"));
+        assertThat(found.state()).isInstanceOf(OrderState.Paid.class);
+        OrderState.Paid restored = (OrderState.Paid) found.state();
+        assertThat(restored.paymentId()).isEqualTo(new PaymentId("PAY-1"));
     }
 }

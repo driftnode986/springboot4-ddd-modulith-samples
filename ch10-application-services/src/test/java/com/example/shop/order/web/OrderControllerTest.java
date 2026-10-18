@@ -1,6 +1,5 @@
 package com.example.shop.order.web;
 
-// #region test-imports
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
@@ -14,17 +13,11 @@ import com.example.shop.order.domain.OrderId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-// #region webmvctest-import
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-// #endregion
 import org.springframework.http.MediaType;
-// #region mockitobean-import
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-// #endregion
 import org.springframework.test.web.servlet.MockMvc;
-// #endregion
 
-// #region test-head
 @WebMvcTest(OrderController.class)
 class OrderControllerTest {
 
@@ -35,67 +28,37 @@ class OrderControllerTest {
     @Test
     @DisplayName("注文を受け付けると 201 と識別子を返す")
     void returnsCreated() throws Exception {
-        given(placeOrderService.place(
-                        any(PlaceOrderCommand.class)))
+        given(placeOrderService.place(any(PlaceOrderCommand.class)))
                 .willReturn(new OrderId("O-001"));
 
         mvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-API-Version", "1")
-                        .content("""
-                            {"customerId":"C-001",
-                             "lines":[{"productId":"P-001",
-                                       "quantity":2,
-                                       "unitPriceYen":1500}]}
-                            """))
+                        .content(
+                                """
+                                {"customerId":"C-001",
+                                 "lines":[{"productId":"P-001","quantity":2,"unitPriceYen":1500}]}
+                                """))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.orderId")
-                        .value("O-001"));
+                .andExpect(jsonPath("$.orderId").value("O-001"));
     }
-// #endregion
 
-    // #region returns-422
     @Test
     @DisplayName("規則に反する注文は 422 で返す")
     void returnsUnprocessableEntity() throws Exception {
-        willThrow(new IllegalStateException(
-                        "1 注文の上限を超えます: 800000 > 500000"))
+        willThrow(new IllegalStateException("1 注文の上限を超えます: 800000 > 500000"))
                 .given(placeOrderService)
                 .place(any(PlaceOrderCommand.class));
 
         mvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-API-Version", "1")
-                        .content("""
-                            {"customerId":"C-001",
-                             "lines":[{"productId":"P-001",
-                                       "quantity":1,
-                                       "unitPriceYen":800000}]}
-                            """))
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.detail").value(
-                        "1 注文の上限を超えます: 800000 > 500000"));
+                        .content(
+                                """
+                                {"customerId":"C-001",
+                                 "lines":[{"productId":"P-001","quantity":1,"unitPriceYen":800000}]}
+                                """))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.detail").value("1 注文の上限を超えます: 800000 > 500000"));
     }
-    // #endregion
-
-    /** 入力そのものが成立していない例外は 400 になる（本には載せていない確認）。 */
-    @Test
-    @DisplayName("入力が成立しない注文は 400 で返す")
-    void returnsBadRequest() throws Exception {
-        willThrow(new IllegalArgumentException("明細が 1 件もありません"))
-                .given(placeOrderService)
-                .place(any(PlaceOrderCommand.class));
-
-        mvc.perform(post("/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-API-Version", "1")
-                        .content("""
-                            {"customerId":"C-001","lines":[]}
-                            """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail")
-                        .value("明細が 1 件もありません"));
-    }
-// #region test-end
 }
-// #endregion

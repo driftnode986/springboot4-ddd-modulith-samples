@@ -8,7 +8,7 @@ class ReserveStockService implements StockReservation {
 
     @Override
     public void reserve(String sku, int quantity) {
-        // この窓口は中身を持たない。在庫の引き当ては、
-        // 第14章でイベントを受け取る側に実装します。
+        // 在庫の引き当ては第9章で実装します。
+        // ここでは order から見える窓口が spi だけであることの確認に使います。
     }
 }

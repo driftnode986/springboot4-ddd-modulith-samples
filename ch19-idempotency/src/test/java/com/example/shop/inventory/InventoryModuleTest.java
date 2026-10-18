@@ -29,8 +29,7 @@ class InventoryModuleTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
     @Autowired private StockRepository stocks;
     @Autowired private JdbcTemplate jdbc;
@@ -39,14 +38,8 @@ class InventoryModuleTest {
 
     @BeforeEach
     void setUp() {
-        sku = "P-"
-                + UUID.randomUUID().toString().substring(0, 8);
-        jdbc.update(
-                "INSERT INTO inventory.stocks"
-                        + " (sku, quantity, version)"
-                        + " VALUES (?, ?, 0)",
-                sku,
-                10);
+        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        jdbc.update("INSERT INTO inventory.stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
     }
 
     @Test
@@ -60,12 +53,7 @@ class InventoryModuleTest {
                         List.of(new OrderPlaced.Item(sku, 3)));
 
         scenario.publish(event)
-                .andWaitForStateChange(
-                        () -> stocks.findBySku(sku)
-                                .orElseThrow()
-                                .quantity(),
-                        q -> q < 10)
-                .andVerify(quantity ->
-                        assertThat(quantity).isEqualTo(7));
+                .andWaitForStateChange(() -> stocks.findBySku(sku).orElseThrow().quantity(), q -> q < 10)
+                .andVerify(quantity -> assertThat(quantity).isEqualTo(7));
     }
 }

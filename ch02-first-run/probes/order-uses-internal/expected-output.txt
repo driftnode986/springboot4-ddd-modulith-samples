@@ -1,8 +1,0 @@
-org.springframework.modulith.core.Violations: - Module 'order' depends on non-exposed type com.example.shop.inventory.internal.StockRepository within module 'inventory'!
-StockRepository declares parameter StockRepository(StockRepository) in (OrderService.java:0)
-- Module 'order' depends on non-exposed type com.example.shop.inventory.internal.StockRepository within module 'inventory'!
-Method <com.example.shop.order.OrderService.place(com.example.shop.order.Order)> calls method <com.example.shop.inventory.internal.StockRepository.decrement(java.lang.String, int)> in (OrderService.java:14)
-- Module 'order' depends on non-exposed type com.example.shop.inventory.internal.StockRepository within module 'inventory'!
-Field <com.example.shop.order.OrderService.stockRepository> has type <com.example.shop.inventory.internal.StockRepository> in (OrderService.java:0)
-- Module 'order' depends on non-exposed type com.example.shop.inventory.internal.StockRepository within module 'inventory'!
-Constructor <com.example.shop.order.OrderService.<init>(com.example.shop.inventory.internal.StockRepository)> has parameter of type <com.example.shop.inventory.internal.StockRepository> in (OrderService.java:0)

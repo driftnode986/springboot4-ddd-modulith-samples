@@ -25,8 +25,7 @@ public class PlaceOrderService {
     private final ShipmentArrangement shipments;
 
     public PlaceOrderService(
-            OrderRepository orders, Clock clock,
-            ShipmentArrangement shipments) {
+            OrderRepository orders, Clock clock, ShipmentArrangement shipments) {
         this.orders = orders;
         this.clock = clock;
         this.shipments = shipments;
@@ -51,8 +50,7 @@ public class PlaceOrderService {
         }
 
         orders.save(order);
-        shipments.arrange(order.id().value(),
-                command.address());
+        shipments.arrange(order.id().value(), command.address());
         return order.id();
     }
 }

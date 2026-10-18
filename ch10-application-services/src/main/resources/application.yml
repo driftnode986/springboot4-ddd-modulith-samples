@@ -1,12 +1,12 @@
 spring:
-  mvc:
-    apiversion:
-      use:
-        header: X-API-Version
-      required: true
   flyway:
     locations: classpath:db/migration/order
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  mvc:
+    apiversion:
+      use:
+        header: X-API-Version
+      required: true

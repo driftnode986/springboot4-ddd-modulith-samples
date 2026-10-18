@@ -7,11 +7,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
 /** 表の形をそのまま写した入れ物。ドメインの Stock とは別物。 */
-// #region entity-table
 @Entity
 @Table(name = "stocks", schema = "inventory")
 class StockEntity {
-// #endregion
 
     @Id
     private String sku;

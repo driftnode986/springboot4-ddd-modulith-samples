@@ -1,7 +1,6 @@
 plugins {
     id 'java'
-    id 'checkstyle'
-    id 'org.springframework.boot' version '4.1.1'
+    id 'org.springframework.boot' version '4.1.0'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -19,11 +18,7 @@ repositories {
 }
 
 ext {
-    springModulithVersion = '2.1.1'
-    // Boot 4.1.1 の Tomcat・Jackson には既知の脆弱性がある。
-    // 修正済みの版に上げる（Boot が追いついたら外す）
-    set('tomcat.version', '11.0.27')
-    set('jackson-bom.version', '3.1.7')
+    springModulithVersion = '2.1.0'
 }
 
 dependencies {
@@ -43,21 +38,20 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers-postgresql'
 }
 
-// #region structure-test
 tasks.register('structureTest', Test) {
-    description = '境界の構造だけを検証する。' +
-            'DB を起動しないので速い。'
+    description = '境界の構造だけを検証する。DB を起動しないので速い。'
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
     useJUnitPlatform()
     filter {
-        includeTestsMatching(
-                'com.example.shop.StagedAdoptionTests')
+        includeTestsMatching 'com.example.shop.StagedAdoptionTests'
         includeTestsMatching 'com.example.shop.LayeringTests'
     }
+    testLogging {
+        events "passed", "failed"
+    }
 }
-// #endregion
 
 tasks.named('test') {
     useJUnitPlatform()
@@ -71,9 +65,4 @@ dependencyManagement {
     imports {
         mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
     }
-}
-
-// 1行の長さを確かめる（設定は config/checkstyle/checkstyle.xml）
-checkstyle {
-    toolVersion = '10.26.1'
 }

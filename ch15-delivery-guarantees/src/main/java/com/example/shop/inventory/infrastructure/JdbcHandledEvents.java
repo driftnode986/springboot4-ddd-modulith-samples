@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
  * 割り込むと、どちらの処理も「まだ無い」と判断してしまう。挿入を試みて、
  * 主キーの重複で拒まれたかどうかで判断する。
  */
-// #region jdbc-handled-events
 @Repository
 class JdbcHandledEvents implements HandledEvents {
 
@@ -27,13 +26,10 @@ class JdbcHandledEvents implements HandledEvents {
     }
 
     @Override
-    public boolean recordIfFirst(
-            String eventId, String handler) {
+    public boolean recordIfFirst(String eventId, String handler) {
         try {
             jdbc.update(
-                    "INSERT INTO handled_events"
-                            + " (event_id, handler, handled_at)"
-                            + " VALUES (?, ?, ?)",
+                    "INSERT INTO handled_events (event_id, handler, handled_at) VALUES (?, ?, ?)",
                     eventId,
                     handler,
                     Timestamp.from(clock.instant()));
@@ -43,4 +39,3 @@ class JdbcHandledEvents implements HandledEvents {
         }
     }
 }
-// #endregion

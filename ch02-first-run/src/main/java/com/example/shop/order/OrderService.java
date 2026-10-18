@@ -11,7 +11,6 @@ public class OrderService {
     }
 
     public void place(Order order) {
-        inventoryService.decrease(
-                order.sku(), order.quantity());
+        inventoryService.decrease(order.sku(), order.quantity());
     }
 }

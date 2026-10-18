@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'checkstyle'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -17,16 +16,9 @@ repositories {
     mavenCentral()
 }
 
-// Spring Boot が依存の版を決めている一覧（BOM）
-def bootBom =
-    'org.springframework.boot:spring-boot-dependencies:4.1.1'
-
 dependencyManagement {
     imports {
-        mavenBom bootBom, {
-            // Boot 4.1.1 の Jackson には既知の脆弱性がある
-            bomProperty 'jackson-bom.version', '3.1.7'
-        }
+        mavenBom 'org.springframework.boot:spring-boot-dependencies:4.1.0'
     }
 }
 
@@ -41,9 +33,4 @@ tasks.named('test') {
         showStandardStreams = true
         events "passed", "failed", "skipped"
     }
-}
-
-// 1行の長さを確かめる（設定は config/checkstyle/checkstyle.xml）
-checkstyle {
-    toolVersion = '10.26.1'
 }

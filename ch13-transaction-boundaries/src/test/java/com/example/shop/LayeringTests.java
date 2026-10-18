@@ -17,19 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
  */
 class LayeringTests {
 
-    static final JavaClasses classes =
-            new ClassFileImporter()
-                    .withImportOption(ImportOption.Predefined
-                            .DO_NOT_INCLUDE_TESTS)
-                    .importPackages("com.example.shop");
+    static final JavaClasses classes = new ClassFileImporter()
+            .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+            .importPackages("com.example.shop");
 
     @Test
     @DisplayName("domain は infrastructure を参照しない")
     void domainDoesNotDependOnInfrastructure() {
         noClasses()
                 .that().resideInAPackage("..domain..")
-                .should().dependOnClassesThat()
-                .resideInAPackage("..infrastructure..")
+                .should().dependOnClassesThat().resideInAPackage("..infrastructure..")
                 .check(classes);
     }
 
@@ -38,8 +35,7 @@ class LayeringTests {
     void domainDoesNotDependOnSpring() {
         noClasses()
                 .that().resideInAPackage("..domain..")
-                .should().dependOnClassesThat()
-                .resideInAPackage("org.springframework..")
+                .should().dependOnClassesThat().resideInAPackage("org.springframework..")
                 .check(classes);
     }
 
@@ -57,8 +53,7 @@ class LayeringTests {
     @DisplayName("@Transactional は application だけに付ける")
     void transactionalOnlyInApplication() {
         noClasses()
-                .that()
-                .resideOutsideOfPackage("..application..")
+                .that().resideOutsideOfPackage("..application..")
                 .should().beAnnotatedWith(Transactional.class)
                 .check(classes);
     }

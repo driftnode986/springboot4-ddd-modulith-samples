@@ -31,8 +31,7 @@ class DirectCallRollbackTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
     @Autowired
     private PlaceOrderService placeOrder;
@@ -52,22 +51,19 @@ class DirectCallRollbackTest {
         when(shipments.arrange(anyString(), anyString()))
                 .thenAnswer(invocation -> {
                     attempted.add(invocation.getArgument(0));
-                    throw new IllegalStateException(
-                            "出荷の手配に失敗しました");
+                    throw new IllegalStateException("出荷の手配に失敗しました");
                 });
 
         PlaceOrderCommand command = new PlaceOrderCommand(
                 "CUS-DIRECT-1",
                 "東京都千代田区1-1-1",
-                List.of(new PlaceOrderCommand.Line(
-                        "P-1", 1, 1500)));
+                List.of(new PlaceOrderCommand.Line("P-1", 1, 1500)));
 
         assertThatThrownBy(() -> placeOrder.place(command))
                 .isInstanceOf(IllegalStateException.class);
 
         // 同じトランザクションなので、注文の保存ごと巻き戻っている。
         assertThat(attempted).hasSize(1);
-        assertThat(orders.findById(
-                new OrderId(attempted.get(0)))).isEmpty();
+        assertThat(orders.findById(new OrderId(attempted.get(0)))).isEmpty();
     }
 }

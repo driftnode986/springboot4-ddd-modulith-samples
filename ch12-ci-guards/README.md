@@ -17,12 +17,6 @@ Docker は必要です。Docker Desktop や OrbStack を起動しておいてく
 
 代わりに `StagedAdoptionTests` が動いていて、**新しい違反が増えたときだけ落ちます**。
 
-## probes/ と steps/
-
-- `probes/` … 本文で「置いてビルドすると止まる」確認用のファイル（`LayerViolationProbe`・`PaymentCatalogPeek`）。ビルドの対象外です。1ファイルずつ写して確かめ、確かめたら消してください。`LayerViolationProbe` は、本文のとおり第11章のフォルダ（`ch11-redrawing-boundaries`）の `src/main/java/com/example/shop/order/domain/` に写し、`JpaOrderRepository` のクラスと構築子を一時的に `public` にして `./gradlew test --tests com.example.shop.ModularityTests` を実行します（この章のフォルダは `verify()` のテストを `@Disabled` にしてあるため）。`PaymentCatalogPeek` はこの章のフォルダの `src/main/java/com/example/shop/payment/application/` に写して `./gradlew test --tests com.example.shop.StagedAdoptionTests` を実行します
-- `steps/single-job/` … 2段に分ける前の、最初のワークフロー
-- `.github/workflows/build.yml` は見本です。GitHub Actions はリポジトリ直下の `.github/workflows` しか読まないので、このディレクトリの下では動きません。自分のリポジトリの直下に置いて使います
-
 ## この章の要点
 
 `verify()` はモジュールの**間**、ArchUnit はモジュールの**内側**を見ます。

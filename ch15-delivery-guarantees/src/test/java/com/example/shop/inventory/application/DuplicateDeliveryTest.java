@@ -25,8 +25,7 @@ class DuplicateDeliveryTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
     @Autowired private StockRepository stocks;
     @Autowired private HandledEvents handledEvents;
@@ -34,8 +33,8 @@ class DuplicateDeliveryTest {
 
     /**
      * 受信側を直接組み立てて呼ぶ。コンテナから取り出したものを呼ぶと
-     * {@code @ApplicationModuleListener} の {@code @Async} が働いて
-     * 別スレッドに逃げ、検査が引き当ての前に走ってしまう。ここで測りたいのは重複の扱いだけなので、
+     * {@code @ApplicationModuleListener} の {@code @Async} が働いて別スレッドに逃げ、
+     * 検査が引き当ての前に走ってしまう。ここで測りたいのは重複の扱いだけなので、
      * 素のオブジェクトを同じスレッドで呼ぶ。
      */
     private ReserveStockOnOrderPlaced listener;
@@ -44,33 +43,25 @@ class DuplicateDeliveryTest {
 
     @BeforeEach
     void setUp() {
-        sku = "P-"
-                + UUID.randomUUID().toString().substring(0, 8);
-        jdbc.update(
-                "INSERT INTO stocks (sku, quantity, version)"
-                        + " VALUES (?, ?, 0)",
-                sku, 10);
-        listener = new ReserveStockOnOrderPlaced(
-                stocks, handledEvents);
+        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        jdbc.update("INSERT INTO stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
+        listener = new ReserveStockOnOrderPlaced(stocks, handledEvents);
     }
 
     private OrderPlaced event(String eventId) {
-        return new OrderPlaced(eventId, "ORD-1", "CUS-1",
-                List.of(new OrderPlaced.Item(sku, 3)));
+        return new OrderPlaced(
+                eventId, "ORD-1", "CUS-1", List.of(new OrderPlaced.Item(sku, 3)));
     }
 
     @Test
-    @DisplayName("同じイベントを 2 回受け取っても、"
-            + "在庫は 1 回しか減らない")
+    @DisplayName("同じイベントを 2 回受け取っても、在庫は 1 回しか減らない")
     void reservesOnlyOnceForTheSameEvent() {
-        OrderPlaced delivered =
-                event(UUID.randomUUID().toString());
+        OrderPlaced delivered = event(UUID.randomUUID().toString());
 
         listener.on(delivered);
         listener.on(delivered);
 
-        assertThat(stocks.findBySku(sku)).get()
-                .extracting("quantity").isEqualTo(7);
+        assertThat(stocks.findBySku(sku)).get().extracting("quantity").isEqualTo(7);
     }
 
     @Test
@@ -79,7 +70,6 @@ class DuplicateDeliveryTest {
         listener.on(event(UUID.randomUUID().toString()));
         listener.on(event(UUID.randomUUID().toString()));
 
-        assertThat(stocks.findBySku(sku)).get()
-                .extracting("quantity").isEqualTo(4);
+        assertThat(stocks.findBySku(sku)).get().extracting("quantity").isEqualTo(4);
     }
 }

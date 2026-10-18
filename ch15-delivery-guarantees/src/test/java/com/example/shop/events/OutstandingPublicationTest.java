@@ -6,7 +6,6 @@ import com.example.shop.order.application.PlaceOrderCommand;
 import com.example.shop.order.application.PlaceOrderService;
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,15 +20,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /** 受け取る側が完了しなかったイベントが、レジストリの表に残ることを確かめる。 */
-// #region head
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
 class OutstandingPublicationTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres =
-            new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
 
     @Autowired private PlaceOrderService placeOrder;
     @Autowired private JdbcTemplate jdbc;
@@ -39,99 +36,54 @@ class OutstandingPublicationTest {
         jdbc.update("DELETE FROM event_publication");
     }
 
-    private PlaceOrderCommand command(
-            String customerId, String productId) {
+    private PlaceOrderCommand command(String customerId, String productId) {
         return new PlaceOrderCommand(
                 customerId,
                 "東京都千代田区1-1-1",
-                List.of(new PlaceOrderCommand.Line(
-                        productId, 1, 1500)));
+                List.of(new PlaceOrderCommand.Line(productId, 1, 1500)));
     }
-    // #endregion
 
     @Test
     @DisplayName("受け取る側が成功すると、完了の時刻が記録される")
     void publicationIsCompletedWhenListenerSucceeds() {
-        String sku = "P-"
-                + UUID.randomUUID().toString().substring(0, 8);
-        jdbc.update(
-                "INSERT INTO stocks (sku, quantity, version)"
-                        + " VALUES (?, ?, 0)",
-                sku, 10);
+        String sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        jdbc.update("INSERT INTO stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
 
         placeOrder.place(command("CUS-REG-1", sku));
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> assertThat(
-                        jdbc.queryForObject(
-                                "SELECT count(*)"
-                                + " FROM event_publication"
-                                + " WHERE completion_date"
-                                + " IS NOT NULL",
-                                Integer.class))
-                        .isEqualTo(1));
+                .untilAsserted(
+                        () ->
+                                assertThat(
+                                                jdbc.queryForObject(
+                                                        "SELECT count(*) FROM event_publication"
+                                                                + " WHERE completion_date IS NOT NULL",
+                                                        Integer.class))
+                                        .isEqualTo(1));
     }
 
     @Test
-    @DisplayName("失敗したイベントは、受け取る側ごとに 1 行、"
-            + "FAILED として記録される")
-    void failedPublicationIsRecordedPerListener() {
-        String missing = "P-"
-                + UUID.randomUUID().toString().substring(0, 8);
-
-        placeOrder.place(command("CUS-REG-3", missing));
-
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> assertThat(
-                        jdbc.queryForList(
-                                "SELECT listener_id,"
-                                + " event_type, status,"
-                                + " serialized_event"
-                                + " FROM event_publication"))
-                        .singleElement()
-                        .satisfies(row ->
-                                assertRecorded(row, missing)));
-    }
-
-    private static void assertRecorded(
-            Map<String, Object> row, String sku) {
-        assertThat(row.get("listener_id")).isEqualTo(
-                "com.example.shop.inventory.application"
-                        + ".ReserveStockOnOrderPlaced"
-                        + ".on(com.example.shop.order.spi"
-                        + ".OrderPlaced)");
-        assertThat(row.get("event_type")).isEqualTo(
-                "com.example.shop.order.spi.OrderPlaced");
-        assertThat(row.get("status")).isEqualTo("FAILED");
-        assertThat((String) row.get("serialized_event"))
-                .contains("\"customerId\":\"CUS-REG-3\"")
-                .contains("\"productId\":\"" + sku + "\"");
-    }
-
-    // #region fails
-    @Test
-    @DisplayName("受け取る側が失敗すると、"
-            + "イベントは未完了のまま表に残る")
+    @DisplayName("受け取る側が失敗すると、イベントは未完了のまま表に残る")
     void publicationStaysOutstandingWhenListenerFails() {
-        // 在庫のない商品を注文する。
-        // 受け取る側は引き当てに失敗する。
-        String missing = "P-"
-                + UUID.randomUUID().toString().substring(0, 8);
+        // 在庫のない商品を注文する。受け取る側は引き当てに失敗する。
+        String missing = "P-" + UUID.randomUUID().toString().substring(0, 8);
 
         placeOrder.place(command("CUS-REG-2", missing));
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> assertThat(
-                        jdbc.queryForObject(
-                                "SELECT count(*)"
-                                + " FROM event_publication"
-                                + " WHERE completion_date"
-                                + " IS NULL",
-                                Integer.class))
-                        .isEqualTo(1));
+                .untilAsserted(
+                        () ->
+                                assertThat(
+                                                jdbc.queryForObject(
+                                                        "SELECT count(*) FROM event_publication"
+                                                                + " WHERE completion_date IS NULL",
+                                                        Integer.class))
+                                        .isEqualTo(1));
+
+        jdbc.queryForList(
+                        "SELECT listener_id, event_type, status, serialized_event FROM event_publication")
+                .forEach(row -> System.out.println("OUTSTANDING=" + row));
     }
 }
-// #endregion

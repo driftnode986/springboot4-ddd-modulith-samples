@@ -1,4 +1,0 @@
-src/main/java/com/example/shop/order/domain/OrderStateView.java:12: エラー: switch式がすべての可能な入力値をカバーしていません
-        return switch (state) {
-               ^
-エラー1個

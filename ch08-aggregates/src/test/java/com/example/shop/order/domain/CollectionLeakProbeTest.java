@@ -26,44 +26,34 @@ class CollectionLeakProbeTest {
         assertThat(inside).hasSize(2);
     }
 
-    // #region unmodifiable-view
     @Test
-    @DisplayName("unmodifiableList は書けないが、"
-            + "あとからの内部変更が見える")
+    @DisplayName("unmodifiableList は書けないが、あとからの内部変更が見える")
     void unmodifiableListIsALiveView() {
         List<String> inside = new ArrayList<>();
         inside.add("A");
-        List<String> view =
-                Collections.unmodifiableList(inside);
+        List<String> view = Collections.unmodifiableList(inside);
 
         assertThatThrownBy(() -> view.add("B"))
-                .isInstanceOf(
-                        UnsupportedOperationException.class);
+                .isInstanceOf(UnsupportedOperationException.class);
 
         inside.add("C");
 
-        // 内部の追加がそのまま見えている
-        assertThat(view).hasSize(2);
+        assertThat(view).hasSize(2); // 内部の追加がそのまま見えている
     }
-    // #endregion
 
-    // #region copy-of-snapshot
     @Test
-    @DisplayName("List.copyOf はその時点の複製なので、"
-            + "あとからの内部変更が見えない")
+    @DisplayName("List.copyOf はその時点の複製なので、あとからの内部変更が見えない")
     void copyOfIsASnapshot() {
         List<String> inside = new ArrayList<>();
         inside.add("A");
         List<String> copy = List.copyOf(inside);
 
         assertThatThrownBy(() -> copy.add("B"))
-                .isInstanceOf(
-                        UnsupportedOperationException.class);
+                .isInstanceOf(UnsupportedOperationException.class);
 
         inside.add("C");
 
         assertThat(copy).hasSize(1); // 複製した時点のまま
         assertThat(inside).hasSize(2);
     }
-    // #endregion
 }

@@ -16,7 +16,6 @@ import java.util.List;
  * 表の形をそのまま写した入れ物。ドメインの Order とは別物で、
  * 変換は OrderMapper だけが行う。
  */
-// #region entity-fields
 @Entity
 @Table(name = "orders")
 class OrderEntity {
@@ -33,10 +32,6 @@ class OrderEntity {
     @Column(name = "accepted_at")
     private Instant acceptedAt;
 
-    // reservationId / paymentId / confirmedAt /
-    // cancelledAt / cancelReason も同様
-    // #endregion
-
     @Column(name = "reservation_id")
     private String reservationId;
 
@@ -52,11 +47,8 @@ class OrderEntity {
     @Column(name = "cancel_reason")
     private String cancelReason;
 
-    // #region entity-rest
-    // #region version
     @Version
     private Long version;
-    // #endregion
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "order_id", nullable = false)
@@ -69,9 +61,6 @@ class OrderEntity {
     OrderEntity(String id) {
         this.id = id;
     }
-
-    // 以下、各フィールドの getter と setter
-    // #endregion
 
     String getId() {
         return id;

@@ -6,11 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-// #region header
 @SpringBootApplication
 @EnableAsync
 public class ShopApplication {
-// #endregion
     public static void main(String[] args) {
         SpringApplication.run(ShopApplication.class, args);
     }

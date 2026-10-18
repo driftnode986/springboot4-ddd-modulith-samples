@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class QuantityTest {
 
-    // #region tests
     @Test
     @DisplayName("1以上なら生成できる")
     void 一以上なら生成できる() {
@@ -24,5 +23,4 @@ class QuantityTest {
         assertThatThrownBy(() -> new Quantity(invalid))
                 .isInstanceOf(IllegalArgumentException.class);
     }
-    // #endregion
 }

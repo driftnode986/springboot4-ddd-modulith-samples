@@ -1,6 +1,5 @@
 package com.example.shop.order.application;
 
-// #region test-imports
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -20,13 +19,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-// #endregion
 
-// #region test-head
 class PlaceOrderServiceTest {
 
-    private static final Instant FIXED =
-            Instant.parse("2026-08-06T00:00:00Z");
+    private static final Instant FIXED = Instant.parse("2026-08-06T00:00:00Z");
 
     private RecordingOrderRepository repository;
     private PlaceOrderService service;
@@ -34,69 +30,50 @@ class PlaceOrderServiceTest {
     @BeforeEach
     void setUp() {
         repository = new RecordingOrderRepository();
-        service = new PlaceOrderService(
-                repository, Clock.fixed(FIXED, ZoneOffset.UTC));
+        service = new PlaceOrderService(repository, Clock.fixed(FIXED, ZoneOffset.UTC));
     }
-// #endregion
 
-    // #region places-order
     @Test
-    @DisplayName("注文を受け付けると、"
-            + "保存された注文を識別子で取り出せる")
+    @DisplayName("注文を受け付けると、保存された注文を識別子で取り出せる")
     void placesOrder() {
         PlaceOrderCommand command = new PlaceOrderCommand(
-                "C-001",
-                List.of(new PlaceOrderCommand.Line(
-                        "P-001", 2, 1500)));
+                "C-001", List.of(new PlaceOrderCommand.Line("P-001", 2, 1500)));
 
         OrderId id = service.place(command);
 
         Optional<Order> saved = repository.findById(id);
         assertThat(saved).isPresent();
-        assertThat(saved.get().customerId())
-                .isEqualTo(new CustomerId("C-001"));
-        assertThat(saved.get().total())
-                .isEqualTo(Money.yen(3000));
-        assertThat(saved.get().state())
-                .isInstanceOf(OrderState.Accepted.class);
+        assertThat(saved.get().customerId()).isEqualTo(new CustomerId("C-001"));
+        assertThat(saved.get().total()).isEqualTo(Money.yen(3000));
+        assertThat(saved.get().state()).isInstanceOf(OrderState.Accepted.class);
     }
-    // #endregion
 
-    // #region rejects-empty
     @Test
     @DisplayName("明細が空の注文は受け付けない")
     void rejectsEmptyOrder() {
-        PlaceOrderCommand command =
-                new PlaceOrderCommand("C-001", List.of());
+        PlaceOrderCommand command = new PlaceOrderCommand("C-001", List.of());
 
         assertThatThrownBy(() -> service.place(command))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("明細が 1 件もありません");
     }
-    // #endregion
 
-    // #region rejects-over-limit
     @Test
     @DisplayName("上限を超える注文は受け付けず、何も保存しない")
     void rejectsOverLimitAndSavesNothing() {
         PlaceOrderCommand command = new PlaceOrderCommand(
-                "C-001",
-                List.of(new PlaceOrderCommand.Line(
-                        "P-001", 1, 800_000)));
+                "C-001", List.of(new PlaceOrderCommand.Line("P-001", 1, 800_000)));
 
         assertThatThrownBy(() -> service.place(command))
                 .isInstanceOf(IllegalStateException.class);
 
         assertThat(repository.saveCount()).isZero();
     }
-    // #endregion
 
-    // #region recording-repository
-    static class RecordingOrderRepository
-            implements OrderRepository {
+    /** 保存が呼ばれた回数まで見たいので、第9章のインメモリ実装に数えるだけの機能を足した。 */
+    static class RecordingOrderRepository implements OrderRepository {
 
-        private final Map<OrderId, Order> store =
-                new HashMap<>();
+        private final Map<OrderId, Order> store = new HashMap<>();
         private int saveCount;
 
         @Override
@@ -114,7 +91,4 @@ class PlaceOrderServiceTest {
             return saveCount;
         }
     }
-    // #endregion
-// #region test-end
 }
-// #endregion

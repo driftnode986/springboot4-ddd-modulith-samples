@@ -1,7 +1,6 @@
 plugins {
     id 'java'
-    id 'checkstyle'
-    id 'org.springframework.boot' version '4.1.1'
+    id 'org.springframework.boot' version '4.1.0'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -18,13 +17,8 @@ repositories {
     mavenCentral()
 }
 
-// #region deps
 ext {
-    springModulithVersion = '2.1.1'
-    // Boot 4.1.1 の Tomcat・Jackson には既知の脆弱性がある。
-    // 修正済みの版に上げる（Boot が追いついたら外す）
-    set('tomcat.version', '11.0.27')
-    set('jackson-bom.version', '3.1.7')
+    springModulithVersion = '2.1.0'
 }
 
 dependencies {
@@ -43,52 +37,14 @@ dependencyManagement {
         mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
     }
 }
-// #endregion
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
-// #region test-logging
 tasks.named('test') {
     testLogging {
         showStandardStreams = true
         events "passed", "failed", "skipped"
     }
-}
-// #endregion
-
-// 本が「まずこう書く → 後で書き換える」と示す途中の版は steps/<名前>/src/{main,test}/java に置く。
-// 完成形（src/）とは別のソースセットでビルドしてテストし、./gradlew test の後に続けて回す。
-// 途中の版のクラスは完成形と同じ名前なので、クラスパスでは完成形より前に置く。
-def stepTests = []
-(file('steps').listFiles() ?: []).findAll { it.directory }.sort().each { dir ->
-    def name = 'step' + dir.name.split(/[^A-Za-z0-9]+/)*.capitalize().join()
-    def set = sourceSets.create(name) {
-        java.srcDirs = ["${dir}/src/main/java", "${dir}/src/test/java"]
-        compileClasspath = sourceSets.main.output +
-                configurations.testCompileClasspath
-        runtimeClasspath = output + sourceSets.main.output +
-                configurations.testRuntimeClasspath
-    }
-    stepTests << tasks.register("${name}Test", Test) {
-        description = "steps/${dir.name} のテスト"
-        group = 'verification'
-        testClassesDirs = set.output.classesDirs
-        classpath = set.runtimeClasspath
-        useJUnitPlatform()
-        testLogging {
-            showStandardStreams = true
-            events "passed", "failed", "skipped"
-        }
-    }
-}
-
-tasks.named('test') {
-    finalizedBy stepTests
-}
-
-// 1行の長さを確かめる（設定は config/checkstyle/checkstyle.xml）
-checkstyle {
-    toolVersion = '10.26.1'
 }

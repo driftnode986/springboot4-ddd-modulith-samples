@@ -11,8 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 class InMemoryOrderRepository implements OrderRepository {
 
-    private final Map<UUID, Order> store =
-            new ConcurrentHashMap<>();
+    private final Map<UUID, Order> store = new ConcurrentHashMap<>();
 
     @Override
     public void save(Order order) {
