@@ -32,8 +32,10 @@ class JpaOrderRepositoryTest {
     static PostgreSQLContainer postgres =
             new PostgreSQLContainer("postgres:18");
 
+    // #region repository-field
     @Autowired
     private OrderRepository repository;
+    // #endregion
 
     @Test
     @DisplayName("保存した注文を識別子で取り出せる")

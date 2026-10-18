@@ -34,8 +34,10 @@ class RestoreLimitProbeTest {
     @Autowired
     private OrderRepository repository;
 
+    // #region jpa-field
     @Autowired
     private OrderJpaRepository jpa;
+    // #endregion
 
     // #region restore-over-limit
     @Test
