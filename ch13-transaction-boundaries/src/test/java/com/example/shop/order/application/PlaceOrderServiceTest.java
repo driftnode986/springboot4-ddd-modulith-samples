@@ -31,6 +31,7 @@ class PlaceOrderServiceTest {
 
     private RecordingOrderRepository repository;
     private PlaceOrderService service;
+    // #region events-set-up
     private final List<Object> events = new ArrayList<>();
 
     @BeforeEach
@@ -43,6 +44,7 @@ class PlaceOrderServiceTest {
                         new RecordingShipmentArrangement(),
                         events::add);
     }
+    // #endregion
 
     @Test
     @DisplayName("注文を受け付けると、保存された注文を識別子で取り出せる")
@@ -65,8 +67,10 @@ class PlaceOrderServiceTest {
                 .isInstanceOf(OrderState.Accepted.class);
     }
 
+    // #region publishes
     @Test
-    @DisplayName("注文を保存したあと、注文の成立をイベントで知らせる")
+    @DisplayName("注文を保存したあと、"
+            + "注文の成立をイベントで知らせる")
     void publishesOrderPlaced() {
         PlaceOrderCommand command = new PlaceOrderCommand(
                 "C-001",
@@ -79,6 +83,7 @@ class PlaceOrderServiceTest {
         assertThat(events).containsExactly(
                 new OrderPlaced(id.value(), "C-001"));
     }
+    // #endregion
 
     @Test
     @DisplayName("明細が空の注文は受け付けない")

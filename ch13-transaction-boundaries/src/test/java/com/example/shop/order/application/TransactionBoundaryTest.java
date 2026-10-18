@@ -44,8 +44,10 @@ class TransactionBoundaryTest {
     }
     // #endregion
 
+    // #region listener-runs
     @Test
-    @DisplayName("注文を受け付けると、在庫の引き当てがあとから動く")
+    @DisplayName("注文を受け付けると、"
+            + "在庫の引き当てがあとから動く")
     void listenerRunsAfterOrderIsPlaced() {
         OrderId id = placeOrder.place(command("CUS-EVENT-1"));
 
@@ -55,6 +57,7 @@ class TransactionBoundaryTest {
                         ReserveStockOnOrderPlaced.reserved)
                         .contains(id.value()));
     }
+    // #endregion
 
     // #region listener-fails
     @Test
