@@ -9,10 +9,12 @@ import org.junit.jupiter.api.Test;
 
 class OrderTest {
 
+    // #region constants
     private static final CustomerId CUSTOMER =
             new CustomerId("C-001");
     private static final Instant NOW =
             Instant.parse("2026-08-06T10:00:00Z");
+    // #endregion
 
     // #region total-changes
     @Test

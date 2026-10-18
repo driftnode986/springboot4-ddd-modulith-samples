@@ -17,9 +17,13 @@ repositories {
     mavenCentral()
 }
 
+// Spring Boot が依存の版を決めている一覧（BOM）
+def bootBom =
+    'org.springframework.boot:spring-boot-dependencies:4.1.1'
+
 dependencyManagement {
     imports {
-        mavenBom 'org.springframework.boot:spring-boot-dependencies:4.1.1', {
+        mavenBom bootBom, {
             // Boot 4.1.1 の Jackson には既知の脆弱性がある
             bomProperty 'jackson-bom.version', '3.1.7'
         }
