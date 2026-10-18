@@ -9,5 +9,5 @@ spring:
       republish-outstanding-events-on-restart: true
       staleness:
         published: 1m
-        check-intervall: 1s
+        check-interval: 1s
 # #endregion

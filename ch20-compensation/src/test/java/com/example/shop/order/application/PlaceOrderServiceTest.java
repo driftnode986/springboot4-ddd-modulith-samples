@@ -37,6 +37,7 @@ class PlaceOrderServiceTest {
     @BeforeEach
     void setUp() {
         repository = new RecordingOrderRepository();
+        // #region construct
         service =
                 new PlaceOrderService(
                         repository,
@@ -44,6 +45,7 @@ class PlaceOrderServiceTest {
                         new RecordingShipmentArrangement(),
                         new RecordingPaymentRequest(),
                         events::add);
+        // #endregion
     }
 
     @Test
@@ -128,7 +130,11 @@ class PlaceOrderServiceTest {
         }
     }
 
-    /** 請求は行わない。注文の受け付けそのものだけを確かめたいので、頼まれた事実だけを残す。 */
+    // #region recording-payment
+    /**
+     * 請求は行わない。注文の受け付けそのものだけを
+     * 確かめたいので、頼まれた事実だけを残す。
+     */
     static final class RecordingPaymentRequest
             implements PaymentRequest {
 
@@ -142,4 +148,5 @@ class PlaceOrderServiceTest {
             requested.add(orderId);
         }
     }
+    // #endregion
 }

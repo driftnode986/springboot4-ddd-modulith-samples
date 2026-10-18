@@ -38,8 +38,10 @@ class OrderModuleTest {
 
     @Autowired private PlaceOrderService placeOrder;
 
+    // #region mocks
     @MockitoBean private ShipmentArrangement shipments;
     @MockitoBean private PaymentRequest payments;
+    // #endregion
 
     @Test
     @DisplayName("注文が成立すると、注文成立の事実が発行される")

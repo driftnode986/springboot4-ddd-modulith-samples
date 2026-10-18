@@ -32,7 +32,7 @@ class StalenessProfileTest {
                 .isEqualTo("1m");
         assertThat(yaml.getProperty(
                 "spring.modulith.events.staleness."
-                        + "check-intervall"))
+                        + "check-interval"))
                 .isEqualTo("1s");
     }
 }
