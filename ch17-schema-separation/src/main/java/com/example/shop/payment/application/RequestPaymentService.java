@@ -9,6 +9,7 @@ class RequestPaymentService implements PaymentRequest {
 
     @Override
     public void request(UUID orderId) {
-        // 外部の決済サービスへの接続は第18章で実装します。
+        // 外部の決済サービスへの接続は第18章で作り、
+        // ここから呼ぶのは第20章です。
     }
 }
