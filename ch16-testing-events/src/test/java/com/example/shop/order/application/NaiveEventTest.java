@@ -76,7 +76,8 @@ class NaiveEventTest {
     // #endregion
 
     /**
-     * 発行された事実は {@code PublishedEvents} で見える。ただし引数で受け取るには
+     * 発行された事実はレジストリの表で見える。
+     * {@code PublishedEvents} でも見えるが、引数で受け取るには
      * Spring Modulith の拡張が要る。
      * {@code @SpringBootTest} だけを付けた状態でこの引数を
      * 宣言すると、テストが動く前に {@code ParameterResolutionException} で落ちる
@@ -84,15 +85,16 @@ class NaiveEventTest {
      */
     // #region sees-publication
     @Test
-    @DisplayName("発行されたことは PublishedEvents で見える")
+    @DisplayName("発行されたことはレジストリの表で見える")
     void seesThePublication() {
         placeOrder.place(command());
 
-        // ここでは拡張なしで動かすため、引数では受け取らずに
-        // 発行の有無だけを確かめる。
+        // 表にはほかのテストの記録も残るので、
+        // この注文の商品を含む記録だけを数える。
         Integer publications = jdbc.queryForObject(
-                "SELECT count(*) FROM event_publication",
-                Integer.class);
+                "SELECT count(*) FROM event_publication"
+                        + " WHERE serialized_event LIKE ?",
+                Integer.class, "%" + sku + "%");
         assertThat(publications).isPositive();
     }
     // #endregion
