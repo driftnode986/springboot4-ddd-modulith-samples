@@ -49,12 +49,14 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+// #region test-logging
 tasks.named('test') {
     testLogging {
         showStandardStreams = true
         events "passed", "failed", "skipped"
     }
 }
+// #endregion
 
 // 本が「まずこう書く → 後で書き換える」と示す途中の版は steps/<名前>/src/{main,test}/java に置く。
 // 完成形（src/）とは別のソースセットでビルドしてテストし、./gradlew test の後に続けて回す。
