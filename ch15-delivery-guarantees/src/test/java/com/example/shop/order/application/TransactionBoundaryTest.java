@@ -32,6 +32,7 @@ class TransactionBoundaryTest {
 
     @Autowired private PlaceOrderService placeOrder;
     @Autowired private OrderRepository orders;
+    // #region stock-set-up
     @Autowired private StockRepository stocks;
     @Autowired private JdbcTemplate jdbc;
 
@@ -55,9 +56,12 @@ class TransactionBoundaryTest {
                 List.of(new PlaceOrderCommand.Line(
                         productId, 1, 1500)));
     }
+    // #endregion
 
+    // #region listener-runs
     @Test
-    @DisplayName("注文を受け付けると、在庫の引き当てがあとから動く")
+    @DisplayName("注文を受け付けると、"
+            + "在庫の引き当てがあとから動く")
     void listenerRunsAfterOrderIsPlaced() {
         placeOrder.place(command("CUS-EVENT-1", sku));
 
@@ -68,11 +72,14 @@ class TransactionBoundaryTest {
                                 .extracting("quantity")
                                 .isEqualTo(9));
     }
+    // #endregion
 
+    // #region listener-fails
     @Test
     @DisplayName("受信側が失敗しても、発行元の注文は残る")
     void publisherIsNotRolledBackWhenListenerFails() {
-        // 在庫のない商品を注文する。受信側は引き当てに失敗する。
+        // 在庫のない商品を注文する。
+        // 受信側は引き当てに失敗する。
         String missing = "P-"
                 + UUID.randomUUID().toString().substring(0, 8);
 
@@ -87,8 +94,10 @@ class TransactionBoundaryTest {
                         assertThat(orders.findById(id))
                                 .isPresent());
 
-        // 受信側は例外で終わった。それでも注文はコミット済みなので残っている。
+        // 受信側は例外で終わった。
+        // それでも注文はコミット済みなので残っている。
         assertThat(orders.findById(id)).isPresent();
         assertThat(stocks.findBySku(missing)).isEmpty();
     }
 }
+// #endregion

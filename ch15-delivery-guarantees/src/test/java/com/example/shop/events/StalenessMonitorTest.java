@@ -131,7 +131,7 @@ class StalenessMonitorTest {
                         "spring.modulith.events.staleness"
                                 + ".published=1m",
                         "spring.modulith.events.staleness"
-                                + ".check-intervall=1s")) {
+                                + ".check-interval=1s")) {
             JdbcTemplate jdbc =
                     context.getBean(JdbcTemplate.class);
             leaveStalePublication(jdbc);

@@ -5,5 +5,5 @@ spring:
     events:
       staleness:
         published: 1m
-        check-intervall: 1s
+        check-interval: 1s
 # #endregion
