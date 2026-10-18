@@ -1,5 +1,6 @@
 package com.example.shop.order.domain;
 
+// #region test-head
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.shop.order.domain.OrderState.Accepted;
@@ -15,6 +16,7 @@ class OrderStateTest {
 
     private static final Instant T0 =
             Instant.parse("2026-08-06T10:00:00Z");
+    // #endregion
 
     // #region reserve
     @Test
@@ -46,6 +48,7 @@ class OrderStateTest {
     }
     // #endregion
 
+    // #region confirm
     @Test
     @DisplayName("支払済からは確定に進める")
     void 支払済からは確定に進める() {
@@ -58,6 +61,7 @@ class OrderStateTest {
         assertThat(confirmed.paymentId())
                 .isEqualTo(new PaymentId("PAY-1"));
     }
+    // #endregion
 
     @Test
     @DisplayName("受付済は決済の識別子を持たない")

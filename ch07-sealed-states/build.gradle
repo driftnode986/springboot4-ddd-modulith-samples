@@ -1,3 +1,4 @@
+// #region start-plugins
 plugins {
     id 'java'
     id 'checkstyle'
@@ -16,10 +17,16 @@ java {
 repositories {
     mavenCentral()
 }
+// #endregion
+
+// #region start-deps
+// Spring Boot が依存の版を決めている一覧（BOM）
+def bootBom =
+    'org.springframework.boot:spring-boot-dependencies:4.1.1'
 
 dependencyManagement {
     imports {
-        mavenBom 'org.springframework.boot:spring-boot-dependencies:4.1.1', {
+        mavenBom bootBom, {
             // Boot 4.1.1 の Jackson には既知の脆弱性がある
             bomProperty 'jackson-bom.version', '3.1.7'
         }
@@ -38,6 +45,7 @@ tasks.named('test') {
         events "passed", "failed", "skipped"
     }
 }
+// #endregion
 
 // 本が「まずこう書く → 後で書き換える」と示す途中の版は steps/<名前>/src/{main,test}/java に置く。
 // 完成形（src/）とは別のソースセットでビルドしてテストし、./gradlew test の後に続けて回す。
