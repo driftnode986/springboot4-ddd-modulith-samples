@@ -18,9 +18,11 @@ class RequestPaymentServiceTest {
 
     private final List<Object> events = new ArrayList<>();
     private final List<Reserved> reserved =
-            List.of(new Reserved("P-1", 3), new Reserved("P-2", 1));
+            List.of(new Reserved("P-1", 3),
+                    new Reserved("P-2", 1));
 
-    private RequestPaymentService serviceReturning(ChargeResult result) {
+    private RequestPaymentService serviceReturning(
+            ChargeResult result) {
         return new RequestPaymentService(
                 new StubPaymentGateway(result), events::add);
     }
@@ -45,7 +47,8 @@ class RequestPaymentServiceTest {
         assertThat(events).hasSize(1);
         PaymentFailed failed = (PaymentFailed) events.get(0);
         assertThat(failed.eventId()).isNotBlank();
-        assertThat(failed.orderId()).isEqualTo(orderId.toString());
+        assertThat(failed.orderId())
+                .isEqualTo(orderId.toString());
         assertThat(failed.reason()).isEqualTo("DECLINED");
         assertThat(failed.items()).containsExactly(
                 new PaymentFailed.Item("P-1", 3),
@@ -58,9 +61,10 @@ class RequestPaymentServiceTest {
         RequestPaymentService service =
                 serviceReturning(ChargeResult.UNKNOWN);
 
-        assertThatThrownBy(() ->
-                service.request(UUID.randomUUID(), 12_000, reserved))
-                .isInstanceOf(PaymentUndeterminedException.class);
+        assertThatThrownBy(() -> service.request(
+                        UUID.randomUUID(), 12_000, reserved))
+                .isInstanceOf(
+                        PaymentUndeterminedException.class);
         assertThat(events).isEmpty();
     }
 }

@@ -19,7 +19,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class RegistryPresenceProbeTest {
 
     @Container @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired IncompleteEventPublications registry;
     @Autowired DataSource dataSource;
@@ -27,16 +28,19 @@ class RegistryPresenceProbeTest {
     @Test
     void レジストリのビーンは存在する() {
         assertThat(registry).isNotNull();
-        System.out.println("REGISTRY_CLASS=" + registry.getClass().getName());
+        System.out.println("REGISTRY_CLASS="
+                + registry.getClass().getName());
     }
 
     @Test
     void イベントの表が存在するか調べる() {
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
-        var tables =
-                jdbc.queryForList(
-                        "select table_name from information_schema.tables where table_schema='public' order by table_name",
-                        String.class);
+        var tables = jdbc.queryForList(
+                "select table_name"
+                        + " from information_schema.tables"
+                        + " where table_schema='public'"
+                        + " order by table_name",
+                String.class);
         System.out.println("TABLES=" + tables);
     }
 }

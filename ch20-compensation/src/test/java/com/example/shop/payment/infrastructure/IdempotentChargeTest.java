@@ -30,7 +30,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 /**
  * 同じ請求を二度送っても、課金が 1 回で済むことを確かめる。
  *
- * <p>相手役の WireMock は、冪等キーごとに一度だけ課金を記録する。 本物の決済代行会社が約束していることを、こちらで真似したものになる。
+ * <p>相手役の WireMock は、冪等キーごとに一度だけ課金を記録する。
+ * 本物の決済代行会社が約束していることを、
+ * こちらで真似したものになる。
  */
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
@@ -38,7 +40,8 @@ class IdempotentChargeTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     private static WireMockServer wireMock;
 
@@ -56,11 +59,17 @@ class IdempotentChargeTest {
     }
 
     @DynamicPropertySource
-    static void paymentApiUrl(DynamicPropertyRegistry registry) {
-        registry.add("spring.http.serviceclient.payment.base-url", () -> wireMock.baseUrl());
-        registry.add("spring.http.clients.imperative.factory", () -> "simple");
-        registry.add("spring.http.clients.connect-timeout", () -> "1s");
-        registry.add("spring.http.clients.read-timeout", () -> "300ms");
+    static void paymentApiUrl(
+            DynamicPropertyRegistry registry) {
+        registry.add(
+                "spring.http.serviceclient.payment.base-url",
+                () -> wireMock.baseUrl());
+        registry.add("spring.http.clients.imperative.factory",
+                () -> "simple");
+        registry.add("spring.http.clients.connect-timeout",
+                () -> "1s");
+        registry.add("spring.http.clients.read-timeout",
+                () -> "300ms");
     }
 
     @BeforeEach
@@ -73,13 +82,13 @@ class IdempotentChargeTest {
     void sendsSameKeyForSameOrder() {
         wireMock.stubFor(
                 post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_1","status":"succeeded"}
-                                                """)));
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type",
+                                        "application/json")
+                                .withBody("""
+                            {"id":"ch_1","status":"succeeded"}
+                            """)));
 
         UUID orderId = UUID.randomUUID();
         gateway.charge(orderId, 12_000);
@@ -89,7 +98,8 @@ class IdempotentChargeTest {
         wireMock.verify(
                 2,
                 postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(orderId.toString())));
+                        .withHeader("Idempotency-Key",
+                                equalTo(orderId.toString())));
     }
 
     @Test
@@ -97,13 +107,13 @@ class IdempotentChargeTest {
     void sendsDifferentKeysForDifferentOrders() {
         wireMock.stubFor(
                 post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_1","status":"succeeded"}
-                                                """)));
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type",
+                                        "application/json")
+                                .withBody("""
+                            {"id":"ch_1","status":"succeeded"}
+                            """)));
 
         UUID first = UUID.randomUUID();
         UUID second = UUID.randomUUID();
@@ -113,11 +123,13 @@ class IdempotentChargeTest {
         wireMock.verify(
                 1,
                 postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(first.toString())));
+                        .withHeader("Idempotency-Key",
+                                equalTo(first.toString())));
         wireMock.verify(
                 1,
                 postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(second.toString())));
+                        .withHeader("Idempotency-Key",
+                                equalTo(second.toString())));
     }
 
     @Test
@@ -131,15 +143,16 @@ class IdempotentChargeTest {
                 post(urlEqualTo("/v1/charges"))
                         .inScenario("lost-response")
                         .whenScenarioStateIs(Scenario.STARTED)
-                        .withHeader("Idempotency-Key", equalTo(key))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_9","status":"succeeded"}
-                                                """)
-                                        .withFixedDelay(2_000))
+                        .withHeader("Idempotency-Key",
+                                equalTo(key))
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type",
+                                        "application/json")
+                                .withBody("""
+                            {"id":"ch_9","status":"succeeded"}
+                            """)
+                                .withFixedDelay(2_000))
                         .willSetStateTo("charged"));
 
         // 二度目：相手は同じキーを覚えていて、課金し直さずに一度目の結果を返す。
@@ -147,25 +160,29 @@ class IdempotentChargeTest {
                 post(urlEqualTo("/v1/charges"))
                         .inScenario("lost-response")
                         .whenScenarioStateIs("charged")
-                        .withHeader("Idempotency-Key", equalTo(key))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_9","status":"succeeded"}
-                                                """)));
+                        .withHeader("Idempotency-Key",
+                                equalTo(key))
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type",
+                                        "application/json")
+                                .withBody("""
+                            {"id":"ch_9","status":"succeeded"}
+                            """)));
 
         // 一度目の応答は待ち時間に間に合わないが、送り直しが自動で働く。
         // 二度目は同じキーで届くので、相手は課金し直さず一度目の結果を返す。
-        assertThat(gateway.charge(orderId, 12_000)).isEqualTo(ChargeResult.SETTLED);
+        assertThat(gateway.charge(orderId, 12_000))
+                .isEqualTo(ChargeResult.SETTLED);
 
         // 相手が受け取った請求は 2 通。ただし課金されたのは 1 回だけで、
         // 二度目は一度目の結果を読み出しただけになる（ch_9 が同じことがその証拠）。
         wireMock.verify(
                 2,
                 postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(key))
-                        .withRequestBody(matchingJsonPath("$.reference", equalTo(key))));
+                        .withHeader("Idempotency-Key",
+                                equalTo(key))
+                        .withRequestBody(matchingJsonPath(
+                                "$.reference", equalTo(key))));
     }
 }

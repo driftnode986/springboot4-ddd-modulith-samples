@@ -26,7 +26,8 @@ class ReleaseStockOnPaymentFailedTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     // #region fields-setup
     @Autowired private StockRepository stocks;
@@ -40,7 +41,8 @@ class ReleaseStockOnPaymentFailedTest {
 
     @BeforeEach
     void setUp() {
-        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
         orderId = "ORD-"
                 + UUID.randomUUID().toString().substring(0, 8);
         jdbc.update(

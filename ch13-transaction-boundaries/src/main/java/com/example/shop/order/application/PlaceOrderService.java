@@ -62,7 +62,8 @@ public class PlaceOrderService {
         orders.save(order);
 
         // 出荷は直接呼ぶ。注文と同じトランザクションで動く。
-        shipments.arrange(order.id().value(), command.address());
+        shipments.arrange(
+                order.id().value(), command.address());
 
         // 在庫はイベントで繋ぐ。受け取る相手をここでは知らない。
         events.publishEvent(new OrderPlaced(

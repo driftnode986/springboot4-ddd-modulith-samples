@@ -36,11 +36,13 @@ class AggregateBoundaryTest {
         OrderLine line = new OrderLine(new ProductId("P-100"),
                 new Quantity(1), Money.yen(980));
 
-        assertThat(line.productId()).isInstanceOf(ProductId.class);
+        assertThat(line.productId())
+                .isInstanceOf(ProductId.class);
         var parts = OrderLine.class.getRecordComponents();
         assertThat(Arrays.stream(parts)
                         .map(c -> c.getType().getSimpleName()))
-                .containsExactly("ProductId", "Quantity", "Money");
+                .containsExactly(
+                        "ProductId", "Quantity", "Money");
     }
     // #endregion
 

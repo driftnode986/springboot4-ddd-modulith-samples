@@ -31,20 +31,24 @@ class MutablePitfallTest {
 
         source.add("express");
         // #endregion
-        System.out.println("[probe] 渡した側から追加後 = " + leaky.tags());
-        assertThat(leaky.tags()).containsExactly("gift", "express");
+        System.out.println("[probe] 渡した側から追加後 = "
+                + leaky.tags());
+        assertThat(leaky.tags())
+                .containsExactly("gift", "express");
 
         // #region leaky-got
         List<String> got = leaky.tags();
         got.add("fragile");
         // #endregion
-        System.out.println("[probe] 取り出した側から追加後 = " + leaky.tags());
+        System.out.println("[probe] 取り出した側から追加後 = "
+                + leaky.tags());
         assertThat(leaky.tags())
                 .containsExactly("gift", "express", "fragile");
 
         Leaky a = new Leaky(new ArrayList<>(List.of("a")));
         Leaky b = new Leaky(new ArrayList<>(List.of("a")));
-        System.out.println("[probe] Leaky equals = " + a.equals(b));
+        System.out.println("[probe] Leaky equals = "
+                + a.equals(b));
         assertThat(a).isEqualTo(b);
     }
 
@@ -66,7 +70,8 @@ class MutablePitfallTest {
         Safe safe = new Safe(new ArrayList<>(List.of("gift")));
 
         assertThatThrownBy(() -> safe.tags().add("fragile"))
-                .isInstanceOf(UnsupportedOperationException.class);
+                .isInstanceOf(
+                        UnsupportedOperationException.class);
     }
     // #endregion
 }

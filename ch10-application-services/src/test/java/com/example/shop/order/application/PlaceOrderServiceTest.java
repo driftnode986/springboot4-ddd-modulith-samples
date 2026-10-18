@@ -95,7 +95,8 @@ class PlaceOrderServiceTest {
     static class RecordingOrderRepository
             implements OrderRepository {
 
-        private final Map<OrderId, Order> store = new HashMap<>();
+        private final Map<OrderId, Order> store =
+                new HashMap<>();
         private int saveCount;
 
         @Override

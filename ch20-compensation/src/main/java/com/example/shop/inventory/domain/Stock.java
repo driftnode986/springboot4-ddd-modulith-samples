@@ -20,7 +20,8 @@ public class Stock {
 
     public void reserve(int amount) {
         if (amount > quantity) {
-            throw new IllegalArgumentException("在庫が足りません: " + sku);
+            throw new IllegalArgumentException(
+                    "在庫が足りません: " + sku);
         }
         this.quantity -= amount;
     }

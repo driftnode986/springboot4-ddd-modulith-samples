@@ -7,7 +7,8 @@ public final class OrderWithEnumDemo {
         OrderWithEnum order = new OrderWithEnum();
         System.out.println("status    = " + order.status());
         System.out.println("paymentId = " + order.paymentId());
-        System.out.println("length    = " + order.paymentId().length());
+        System.out.println("length    = "
+                + order.paymentId().length());
         // #endregion
     }
 }

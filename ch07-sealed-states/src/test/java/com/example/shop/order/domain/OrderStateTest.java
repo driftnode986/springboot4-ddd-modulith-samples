@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 
 class OrderStateTest {
 
-    private static final Instant T0 = Instant.parse("2026-08-06T10:00:00Z");
+    private static final Instant T0 =
+            Instant.parse("2026-08-06T10:00:00Z");
 
     // #region reserve
     @Test
@@ -82,8 +83,10 @@ class OrderStateTest {
     @Test
     @DisplayName("取り消した状態は理由を持つ")
     void 取り消した状態は理由を持つ() {
-        Cancelled cancelled = new Cancelled(T0, "在庫を確保できなかったため");
+        Cancelled cancelled =
+                new Cancelled(T0, "在庫を確保できなかったため");
 
-        assertThat(cancelled.reason()).isEqualTo("在庫を確保できなかったため");
+        assertThat(cancelled.reason())
+                .isEqualTo("在庫を確保できなかったため");
     }
 }

@@ -27,7 +27,8 @@ class NaiveEventTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired private PlaceOrderService placeOrder;
     @Autowired private StockRepository stocks;
@@ -37,13 +38,20 @@ class NaiveEventTest {
 
     @BeforeEach
     void setUp() {
-        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
-        jdbc.update("INSERT INTO stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
+        sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
+        jdbc.update(
+                "INSERT INTO stocks (sku, quantity, version)"
+                        + " VALUES (?, ?, 0)",
+                sku, 10);
     }
 
     private PlaceOrderCommand command() {
         return new PlaceOrderCommand(
-                "CUS-1", "東京都千代田区1-1", List.of(new PlaceOrderCommand.Line(sku, 3, 1200L)));
+                "CUS-1",
+                "東京都千代田区1-1",
+                List.of(new PlaceOrderCommand.Line(
+                        sku, 3, 1200L)));
     }
 
     // #region cannot-see
@@ -57,15 +65,16 @@ class NaiveEventTest {
         // ここではまだ終わっていないことがある。
         int remaining =
                 stocks.findBySku(sku).orElseThrow().quantity();
-        System.out.println(
-                "PROBE_REMAINING_RIGHT_AFTER_PLACE=" + remaining);
+        System.out.println("PROBE_REMAINING_RIGHT_AFTER_PLACE="
+                + remaining);
         assertThat(remaining).isBetween(7, 10);
     }
     // #endregion
 
     /**
      * 発行された事実は {@code PublishedEvents} で見える。ただし引数で受け取るには
-     * Spring Modulith の拡張が要る。{@code @SpringBootTest} だけを付けた状態でこの引数を
+     * Spring Modulith の拡張が要る。
+     * {@code @SpringBootTest} だけを付けた状態でこの引数を
      * 宣言すると、テストが動く前に {@code ParameterResolutionException} で落ちる
      * （probes/ の NaiveEventTest.java で確かめられる）。
      */

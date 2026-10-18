@@ -14,7 +14,8 @@ class PlaceOrderWithStringsTest {
         String customerId = "C-1";
         String productId = "P-1";
 
-        assertThatCode(() -> orders.placeOrder(productId, customerId, 1))
+        assertThatCode(() -> orders.placeOrder(
+                        productId, customerId, 1))
                 .doesNotThrowAnyException();
     }
 }

@@ -28,86 +28,107 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class CompletionModeTest {
 
     @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
-    private ConfigurableApplicationContext start(String... extraProperties) {
+    private ConfigurableApplicationContext start(
+            String... extraProperties) {
         String[] base = {
             "spring.datasource.url=" + postgres.getJdbcUrl(),
-            "spring.datasource.username=" + postgres.getUsername(),
-            "spring.datasource.password=" + postgres.getPassword(),
+            "spring.datasource.username="
+                    + postgres.getUsername(),
+            "spring.datasource.password="
+                    + postgres.getPassword(),
         };
-        String[] all = new String[base.length + extraProperties.length];
+        String[] all = new String[
+                base.length + extraProperties.length];
         System.arraycopy(base, 0, all, 0, base.length);
-        System.arraycopy(extraProperties, 0, all, base.length, extraProperties.length);
+        System.arraycopy(extraProperties, 0,
+                all, base.length, extraProperties.length);
 
-        return new SpringApplicationBuilder(ShopApplication.class)
+        return new SpringApplicationBuilder(
+                        ShopApplication.class)
                 .web(WebApplicationType.NONE)
                 .properties(all)
                 // 設定ファイルより優先させたいので、コマンドライン引数として渡す。
-                .run("--spring.modulith.events.republish-outstanding-events-on-restart=false");
+                .run("--spring.modulith.events"
+                        + ".republish-outstanding-events"
+                        + "-on-restart=false");
     }
 
-    private void placeOneOrder(ConfigurableApplicationContext context, String sku) {
+    private void placeOneOrder(
+            ConfigurableApplicationContext context,
+            String sku) {
         JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
         jdbc.update("DELETE FROM event_publication");
         jdbc.update("DELETE FROM handled_events");
         jdbc.update("DELETE FROM stocks WHERE sku = ?", sku);
-        jdbc.update("INSERT INTO stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
+        jdbc.update(
+                "INSERT INTO stocks (sku, quantity, version)"
+                        + " VALUES (?, ?, 0)",
+                sku, 10);
 
         context.getBean(PlaceOrderService.class)
-                .place(
-                        new PlaceOrderCommand(
-                                "CUS-COMPLETION",
-                                "東京都千代田区1-1-1",
-                                List.of(new PlaceOrderCommand.Line(sku, 1, 1500))));
+                .place(new PlaceOrderCommand(
+                        "CUS-COMPLETION",
+                        "東京都千代田区1-1-1",
+                        List.of(new PlaceOrderCommand.Line(
+                                sku, 1, 1500))));
 
         // 引き当てが終わるまで待つ。
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
-                .untilAsserted(
-                        () ->
-                                assertThat(
-                                                jdbc.queryForObject(
-                                                        "SELECT quantity FROM stocks WHERE sku = ?",
-                                                        Integer.class,
-                                                        sku))
-                                        .isEqualTo(9));
+                .untilAsserted(() -> assertThat(
+                        jdbc.queryForObject(
+                                "SELECT quantity FROM stocks"
+                                        + " WHERE sku = ?",
+                                Integer.class,
+                                sku))
+                        .isEqualTo(9));
     }
 
     private Integer rowCount(JdbcTemplate jdbc) {
-        return jdbc.queryForObject("SELECT count(*) FROM event_publication", Integer.class);
+        return jdbc.queryForObject(
+                "SELECT count(*) FROM event_publication",
+                Integer.class);
     }
 
     @Test
     @DisplayName("既定では、処理し終えたイベントの行が残り続ける")
     void completedPublicationRemainsByDefault() {
-        String sku = "P-KEEP-" + UUID.randomUUID().toString().substring(0, 4);
+        String sku = "P-KEEP-"
+                + UUID.randomUUID().toString().substring(0, 4);
 
         try (ConfigurableApplicationContext context = start()) {
             placeOneOrder(context, sku);
-            JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+            JdbcTemplate jdbc =
+                    context.getBean(JdbcTemplate.class);
 
             assertThat(rowCount(jdbc)).isEqualTo(1);
-            System.out.println(
-                    "UPDATE_MODE_ROW="
-                            + jdbc.queryForList(
-                                    "SELECT status, completion_date IS NOT NULL AS completed"
-                                            + " FROM event_publication"));
+            System.out.println("UPDATE_MODE_ROW="
+                    + jdbc.queryForList("SELECT status,"
+                            + " completion_date IS NOT NULL"
+                            + " AS completed"
+                            + " FROM event_publication"));
         }
     }
 
     @Test
     @DisplayName("消す設定にすると、完了と同時に行が消える")
     void completedPublicationIsDeletedWhenConfigured() {
-        String sku = "P-DEL-" + UUID.randomUUID().toString().substring(0, 4);
+        String sku = "P-DEL-"
+                + UUID.randomUUID().toString().substring(0, 4);
 
         try (ConfigurableApplicationContext context =
-                start("spring.modulith.events.completion-mode=delete")) {
+                start("spring.modulith.events"
+                        + ".completion-mode=delete")) {
             placeOneOrder(context, sku);
-            JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+            JdbcTemplate jdbc =
+                    context.getBean(JdbcTemplate.class);
 
             assertThat(rowCount(jdbc)).isZero();
-            System.out.println("DELETE_MODE_ROWCOUNT=" + rowCount(jdbc));
+            System.out.println(
+                    "DELETE_MODE_ROWCOUNT=" + rowCount(jdbc));
         }
     }
 }

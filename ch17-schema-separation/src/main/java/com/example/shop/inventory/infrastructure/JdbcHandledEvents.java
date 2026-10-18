@@ -27,7 +27,8 @@ class JdbcHandledEvents implements HandledEvents {
 
     // #region record-if-first
     @Override
-    public boolean recordIfFirst(String eventId, String handler) {
+    public boolean recordIfFirst(
+            String eventId, String handler) {
         try {
             jdbc.update(
                     "INSERT INTO inventory.handled_events"

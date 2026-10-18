@@ -17,7 +17,10 @@ public interface PaymentRequest {
      * @param amountYen 請求する金額（円）
      * @param reserved 支払いが成立しなかったときに戻す対象
      */
-    void request(UUID orderId, long amountYen, List<Reserved> reserved);
+    void request(
+            UUID orderId,
+            long amountYen,
+            List<Reserved> reserved);
 
     /** 引き当て済みの品目。戻す判断に必要な分だけを持つ。 */
     record Reserved(String productId, int quantity) {

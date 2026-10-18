@@ -63,17 +63,19 @@ public class PlaceOrderService {
         orders.save(order);
 
         // 出荷は直接呼ぶ。注文と同じトランザクションで動く。
-        shipments.arrange(order.id().value(), command.address());
+        shipments.arrange(
+                order.id().value(), command.address());
 
         // 在庫はイベントで繋ぐ。受け取る相手をここでは知らない。
-        events.publishEvent(
-                new OrderPlaced(
-                        UUID.randomUUID().toString(),
-                        order.id().value(),
-                        command.customerId(),
-                        command.lines().stream()
-                                .map(line -> new OrderPlaced.Item(line.productId(), line.quantity()))
-                                .toList()));
+        events.publishEvent(new OrderPlaced(
+                UUID.randomUUID().toString(),
+                order.id().value(),
+                command.customerId(),
+                command.lines().stream()
+                        .map(line -> new OrderPlaced.Item(
+                                line.productId(),
+                                line.quantity()))
+                        .toList()));
 
         return order.id();
     }
@@ -87,14 +89,16 @@ public class PlaceOrderService {
     @Transactional
     public void requestPayment(OrderId orderId) {
         Order order = orders.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("注文がありません: " + orderId.value()));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "注文がありません: " + orderId.value()));
 
         payments.request(
                 UUID.fromString(order.id().value()),
                 order.total().amount().longValue(),
-                order.lines().stream()
-                        .map(line -> new PaymentRequest.Reserved(
-                                line.productId().value(), line.quantity().value()))
+                order.lines().stream().map(line ->
+                        new PaymentRequest.Reserved(
+                                line.productId().value(),
+                                line.quantity().value()))
                         .toList());
     }
 }

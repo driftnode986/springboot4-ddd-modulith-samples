@@ -29,7 +29,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 /**
  * 相手が一時的に落ちているときは送り直し、断られたときは送り直さないことを確かめる。
  *
- * <p>送り直してよいのは、結果が確定していない場合に限る。 与信が通らなかったという返事は確定した結果なので、何度送っても変わらない。
+ * <p>送り直してよいのは、結果が確定していない場合に限る。
+ * 与信が通らなかったという返事は確定した結果なので、
+ * 何度送っても変わらない。
  */
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
@@ -37,7 +39,8 @@ class ChargeRetryTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     private static WireMockServer wireMock;
 
@@ -55,11 +58,17 @@ class ChargeRetryTest {
     }
 
     @DynamicPropertySource
-    static void paymentApiUrl(DynamicPropertyRegistry registry) {
-        registry.add("spring.http.serviceclient.payment.base-url", () -> wireMock.baseUrl());
-        registry.add("spring.http.clients.imperative.factory", () -> "simple");
-        registry.add("spring.http.clients.connect-timeout", () -> "1s");
-        registry.add("spring.http.clients.read-timeout", () -> "300ms");
+    static void paymentApiUrl(
+            DynamicPropertyRegistry registry) {
+        registry.add(
+                "spring.http.serviceclient.payment.base-url",
+                () -> wireMock.baseUrl());
+        registry.add("spring.http.clients.imperative.factory",
+                () -> "simple");
+        registry.add("spring.http.clients.connect-timeout",
+                () -> "1s");
+        registry.add("spring.http.clients.read-timeout",
+                () -> "300ms");
     }
 
     @BeforeEach
@@ -83,21 +92,23 @@ class ChargeRetryTest {
                 post(urlEqualTo("/v1/charges"))
                         .inScenario("recovering")
                         .whenScenarioStateIs("recovered")
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_1","status":"succeeded"}
-                                                """)));
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type",
+                                        "application/json")
+                                .withBody("""
+                            {"id":"ch_1","status":"succeeded"}
+                            """)));
 
-        assertThat(gateway.charge(orderId, 12_000)).isEqualTo(ChargeResult.SETTLED);
+        assertThat(gateway.charge(orderId, 12_000))
+                .isEqualTo(ChargeResult.SETTLED);
 
         // 送り直しても冪等キーは変わらないので、相手は 1 回分として扱える。
         wireMock.verify(
                 2,
                 postRequestedFor(urlEqualTo("/v1/charges"))
-                        .withHeader("Idempotency-Key", equalTo(orderId.toString())));
+                        .withHeader("Idempotency-Key",
+                                equalTo(orderId.toString())));
     }
 
     @Test
@@ -105,27 +116,32 @@ class ChargeRetryTest {
     void doesNotRetryWhenDeclined() {
         wireMock.stubFor(
                 post(urlEqualTo("/v1/charges"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody("""
-                                                {"id":"ch_2","status":"declined"}
-                                                """)));
+                        .willReturn(aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type",
+                                        "application/json")
+                                .withBody("""
+                            {"id":"ch_2","status":"declined"}
+                            """)));
 
-        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.DECLINED);
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.DECLINED);
 
-        wireMock.verify(1, postRequestedFor(urlEqualTo("/v1/charges")));
+        wireMock.verify(
+                1, postRequestedFor(urlEqualTo("/v1/charges")));
     }
 
     @Test
     @DisplayName("相手が落ち続けたら、結果は確定していないものとして諦める")
     void givesUpAfterRepeatedFailures() {
-        wireMock.stubFor(post(urlEqualTo("/v1/charges")).willReturn(aResponse().withStatus(500)));
+        wireMock.stubFor(post(urlEqualTo("/v1/charges"))
+                .willReturn(aResponse().withStatus(500)));
 
-        assertThat(gateway.charge(UUID.randomUUID(), 12_000)).isEqualTo(ChargeResult.UNKNOWN);
+        assertThat(gateway.charge(UUID.randomUUID(), 12_000))
+                .isEqualTo(ChargeResult.UNKNOWN);
 
         // 初回 + 送り直し 2 回。無限には送らない。
-        wireMock.verify(3, postRequestedFor(urlEqualTo("/v1/charges")));
+        wireMock.verify(
+                3, postRequestedFor(urlEqualTo("/v1/charges")));
     }
 }

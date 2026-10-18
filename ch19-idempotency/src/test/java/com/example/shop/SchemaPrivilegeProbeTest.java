@@ -27,20 +27,29 @@ class SchemaPrivilegeProbeTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired private JdbcTemplate jdbc;
 
     private JdbcTemplate asOrderRole() {
         jdbc.execute(
-                "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'order_app')"
-                        + " THEN EXECUTE 'DROP OWNED BY order_app CASCADE';"
-                        + " EXECUTE 'DROP ROLE order_app'; END IF; END $$");
-        jdbc.execute("CREATE ROLE order_app LOGIN PASSWORD 'secret'");
-        jdbc.execute("GRANT USAGE ON SCHEMA ordering TO order_app");
-        jdbc.execute("GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA ordering TO order_app");
+                "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles"
+                        + " WHERE rolname = 'order_app')"
+                        + " THEN EXECUTE"
+                        + " 'DROP OWNED BY order_app CASCADE';"
+                        + " EXECUTE 'DROP ROLE order_app';"
+                        + " END IF; END $$");
+        jdbc.execute("CREATE ROLE order_app"
+                + " LOGIN PASSWORD 'secret'");
+        jdbc.execute(
+                "GRANT USAGE ON SCHEMA ordering TO order_app");
+        jdbc.execute("GRANT SELECT, INSERT, UPDATE"
+                + " ON ALL TABLES IN SCHEMA ordering"
+                + " TO order_app");
 
-        DriverManagerDataSource ds = new DriverManagerDataSource();
+        DriverManagerDataSource ds =
+                new DriverManagerDataSource();
         ds.setUrl(postgres.getJdbcUrl());
         ds.setUsername("order_app");
         ds.setPassword("secret");
@@ -52,23 +61,29 @@ class SchemaPrivilegeProbeTest {
     void cannotReadOtherSchema() {
         JdbcTemplate asOrder = asOrderRole();
 
-        assertThat(asOrder.queryForObject("SELECT count(*) FROM ordering.orders", Integer.class))
+        assertThat(asOrder.queryForObject(
+                        "SELECT count(*) FROM ordering.orders",
+                        Integer.class))
                 .isNotNull();
 
         try {
-            asOrder.queryForObject("SELECT count(*) FROM inventory.stocks", Integer.class);
+            asOrder.queryForObject(
+                    "SELECT count(*) FROM inventory.stocks",
+                    Integer.class);
         } catch (Exception denied) {
-            System.out.println("DENIED_ROOT=" + rootCause(denied).getMessage());
+            System.out.println("DENIED_ROOT="
+                    + rootCause(denied).getMessage());
         }
 
-        assertThatThrownBy(
-                        () ->
-                                asOrder.queryForObject(
-                                        "SELECT count(*) FROM inventory.stocks", Integer.class))
+        assertThatThrownBy(() -> asOrder.queryForObject(
+                        "SELECT count(*) FROM inventory.stocks",
+                        Integer.class))
                 .hasMessageContaining("inventory");
     }
 
     private static Throwable rootCause(Throwable t) {
-        return t.getCause() == null ? t : rootCause(t.getCause());
+        return t.getCause() == null
+                ? t
+                : rootCause(t.getCause());
     }
 }

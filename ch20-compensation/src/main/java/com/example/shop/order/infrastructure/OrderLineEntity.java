@@ -32,7 +32,11 @@ class OrderLineEntity {
         // JPA が使う
     }
 
-    OrderLineEntity(String productId, int quantity, BigDecimal unitAmount, String unitCurrency) {
+    OrderLineEntity(
+            String productId,
+            int quantity,
+            BigDecimal unitAmount,
+            String unitCurrency) {
         this.productId = productId;
         this.quantity = quantity;
         this.unitAmount = unitAmount;

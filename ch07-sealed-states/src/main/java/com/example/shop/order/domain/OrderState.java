@@ -42,7 +42,8 @@ public sealed interface OrderState {
         }
 
         public Paid pay(PaymentId paymentId) {
-            return new Paid(acceptedAt, reservationId, paymentId);
+            return new Paid(acceptedAt, reservationId,
+                    paymentId);
         }
 
         @Override

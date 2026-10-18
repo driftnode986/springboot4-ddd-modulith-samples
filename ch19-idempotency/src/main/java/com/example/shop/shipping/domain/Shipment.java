@@ -9,7 +9,8 @@ public class Shipment {
     private final String orderId;
     private final String address;
 
-    public Shipment(ShipmentId id, String orderId, String address) {
+    public Shipment(ShipmentId id, String orderId,
+            String address) {
         if (address == null || address.isBlank()) {
             throw new IllegalArgumentException("配送先が指定されていません");
         }

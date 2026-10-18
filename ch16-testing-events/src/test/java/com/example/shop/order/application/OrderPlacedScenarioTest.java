@@ -30,7 +30,8 @@ class OrderPlacedScenarioTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired private PlaceOrderService placeOrder;
     @Autowired private StockRepository stocks;
@@ -40,13 +41,20 @@ class OrderPlacedScenarioTest {
 
     @BeforeEach
     void setUp() {
-        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
-        jdbc.update("INSERT INTO stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
+        sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
+        jdbc.update(
+                "INSERT INTO stocks (sku, quantity, version)"
+                        + " VALUES (?, ?, 0)",
+                sku, 10);
     }
 
     private PlaceOrderCommand command() {
         return new PlaceOrderCommand(
-                "CUS-1", "東京都千代田区1-1", List.of(new PlaceOrderCommand.Line(sku, 3, 1200L)));
+                "CUS-1",
+                "東京都千代田区1-1",
+                List.of(new PlaceOrderCommand.Line(
+                        sku, 3, 1200L)));
     }
 
     // #region reserves-eventually

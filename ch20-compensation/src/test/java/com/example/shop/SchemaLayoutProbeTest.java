@@ -19,7 +19,8 @@ class SchemaLayoutProbeTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired private JdbcTemplate jdbc;
 
@@ -28,10 +29,16 @@ class SchemaLayoutProbeTest {
     void listsTablesPerSchema() {
         List<Map<String, Object>> rows =
                 jdbc.queryForList(
-                        "SELECT table_schema, table_name FROM information_schema.tables"
-                                + " WHERE table_schema NOT IN ('pg_catalog', 'information_schema')"
-                                + " ORDER BY table_schema, table_name");
+                        "SELECT table_schema, table_name FROM"
+                                + " information_schema.tables"
+                                + " WHERE table_schema NOT IN"
+                                + " ('pg_catalog',"
+                                + " 'information_schema')"
+                                + " ORDER BY table_schema,"
+                                + " table_name");
 
-        rows.forEach(r -> System.out.println("LAYOUT " + r.get("table_schema") + "." + r.get("table_name")));
+        rows.forEach(r -> System.out.println("LAYOUT "
+                + r.get("table_schema") + "."
+                + r.get("table_name")));
     }
 }

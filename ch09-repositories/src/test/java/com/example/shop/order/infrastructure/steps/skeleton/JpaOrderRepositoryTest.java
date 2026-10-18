@@ -8,7 +8,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /*
  * 第9章で最初に書く形（テストの本体を書く前）。
- * 完成形は com.example.shop.order.infrastructure.JpaOrderRepositoryTest。
+ * 完成形は
+ * com.example.shop.order.infrastructure.JpaOrderRepositoryTest。
  */
 // #region skeleton
 @SpringBootTest

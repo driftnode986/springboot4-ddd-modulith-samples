@@ -33,7 +33,8 @@ class PlaceOrderServiceTest {
         List<String> reserved = new ArrayList<>();
         List<UUID> paid = new ArrayList<>();
         var service = new PlaceOrderService(orders,
-                (sku, quantity) -> reserved.add(sku + " x " + quantity),
+                (sku, quantity) ->
+                        reserved.add(sku + " x " + quantity),
                 paid::add);
 
         UUID id = service.place("C-1", "SKU-1", 2);

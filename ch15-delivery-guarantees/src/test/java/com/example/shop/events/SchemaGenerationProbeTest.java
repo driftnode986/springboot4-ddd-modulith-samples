@@ -24,11 +24,13 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers(disabledWithoutDocker = true)
 class SchemaGenerationProbeTest {
 
-    private static final Path OUT = Path.of("/tmp/schema-out.sql");
+    private static final Path OUT =
+            Path.of("/tmp/schema-out.sql");
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @BeforeAll
     static void removePreviousOutput() throws IOException {
@@ -36,11 +38,15 @@ class SchemaGenerationProbeTest {
     }
 
     @Test
-    @DisplayName("生成される event_publication の serialized_event は varchar(255) になる")
-    void generatedRegistryTableUsesVarchar255() throws IOException {
+    @DisplayName("生成される event_publication の serialized_event は"
+            + " varchar(255) になる")
+    void generatedRegistryTableUsesVarchar255()
+            throws IOException {
         String ddl = Files.readString(OUT);
 
-        assertThat(ddl).contains("create table event_publication");
-        assertThat(ddl).containsPattern("serialized_event varchar\\(255\\) not null");
+        assertThat(ddl)
+                .contains("create table event_publication");
+        assertThat(ddl).containsPattern(
+                "serialized_event varchar\\(255\\) not null");
     }
 }

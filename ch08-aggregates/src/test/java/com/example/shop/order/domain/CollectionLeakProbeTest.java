@@ -33,10 +33,12 @@ class CollectionLeakProbeTest {
     void unmodifiableListIsALiveView() {
         List<String> inside = new ArrayList<>();
         inside.add("A");
-        List<String> view = Collections.unmodifiableList(inside);
+        List<String> view =
+                Collections.unmodifiableList(inside);
 
         assertThatThrownBy(() -> view.add("B"))
-                .isInstanceOf(UnsupportedOperationException.class);
+                .isInstanceOf(
+                        UnsupportedOperationException.class);
 
         inside.add("C");
 
@@ -55,7 +57,8 @@ class CollectionLeakProbeTest {
         List<String> copy = List.copyOf(inside);
 
         assertThatThrownBy(() -> copy.add("B"))
-                .isInstanceOf(UnsupportedOperationException.class);
+                .isInstanceOf(
+                        UnsupportedOperationException.class);
 
         inside.add("C");
 

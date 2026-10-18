@@ -27,11 +27,15 @@ class ApiVersionRoutingProbeTest {
     @Test
     @DisplayName("同じ URL でも、版ごとに別の処理が呼ばれる")
     void routesByVersion() throws Exception {
-        assertThat(mvc.perform(get("/probe").header("X-API-Version", "1"))
-                        .andReturn().getResponse().getContentAsString())
+        assertThat(mvc.perform(get("/probe")
+                                .header("X-API-Version", "1"))
+                        .andReturn().getResponse()
+                        .getContentAsString())
                 .isEqualTo("v1");
-        assertThat(mvc.perform(get("/probe").header("X-API-Version", "2"))
-                        .andReturn().getResponse().getContentAsString())
+        assertThat(mvc.perform(get("/probe")
+                                .header("X-API-Version", "2"))
+                        .andReturn().getResponse()
+                        .getContentAsString())
                 .isEqualTo("v2");
     }
 

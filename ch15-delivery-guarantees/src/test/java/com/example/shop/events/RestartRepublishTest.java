@@ -39,7 +39,8 @@ class RestartRepublishTest {
         // コマンドライン引数として渡す。
         // SpringApplicationBuilder.properties は
         // application.yml より優先度が低い。
-        return new SpringApplicationBuilder(ShopApplication.class)
+        return new SpringApplicationBuilder(
+                        ShopApplication.class)
                 .web(WebApplicationType.NONE)
                 .properties(
                         "spring.datasource.url="
@@ -48,11 +49,10 @@ class RestartRepublishTest {
                                 + postgres.getUsername(),
                         "spring.datasource.password="
                                 + postgres.getPassword())
-                .run(
-                        "--spring.modulith.events"
-                                + ".republish-outstanding-events"
-                                + "-on-restart="
-                                + republish);
+                .run("--spring.modulith.events"
+                        + ".republish-outstanding-events"
+                        + "-on-restart="
+                        + republish);
     }
     // #endregion
 
@@ -61,7 +61,8 @@ class RestartRepublishTest {
     private static final String LISTENER_ID =
             "com.example.shop.inventory.application"
                     + ".ReserveStockOnOrderPlaced"
-                    + ".on(com.example.shop.order.spi.OrderPlaced)";
+                    + ".on(com.example.shop.order.spi"
+                    + ".OrderPlaced)";
     // #endregion
 
     // #region leave-outstanding
@@ -88,7 +89,8 @@ class RestartRepublishTest {
         jdbc.update(
                 """
                 INSERT INTO event_publication
-                  (id, listener_id, event_type, serialized_event,
+                  (id, listener_id, event_type,
+                   serialized_event,
                    publication_date, completion_date,
                    completion_attempts, status)
                 VALUES (?, ?, ?, ?, ?, NULL, 0, 'PUBLISHED')
@@ -115,21 +117,25 @@ class RestartRepublishTest {
     void outstandingPublicationIsNotRepublishedByDefault() {
         String sku = "P-NOREPUB";
 
-        try (ConfigurableApplicationContext first = start(false)) {
+        try (ConfigurableApplicationContext first =
+                start(false)) {
             leaveOutstandingPublication(
                     first.getBean(JdbcTemplate.class), sku);
         }
 
-        try (ConfigurableApplicationContext second = start(false)) {
-            JdbcTemplate jdbc = second.getBean(JdbcTemplate.class);
+        try (ConfigurableApplicationContext second =
+                start(false)) {
+            JdbcTemplate jdbc =
+                    second.getBean(JdbcTemplate.class);
 
             // 何も起きないことを示すため、
             // 一定の時間ずっと変化しないことを確かめる。
             Awaitility.await()
                     .during(Duration.ofSeconds(3))
                     .atMost(Duration.ofSeconds(6))
-                    .untilAsserted(() -> assertThat(
-                            quantityOf(jdbc, sku)).isEqualTo(10));
+                    .untilAsserted(() ->
+                            assertThat(quantityOf(jdbc, sku))
+                                    .isEqualTo(10));
         }
     }
     // #endregion
@@ -141,18 +147,22 @@ class RestartRepublishTest {
     void outstandingPublicationIsRepublishedWhenEnabled() {
         String sku = "P-REPUB";
 
-        try (ConfigurableApplicationContext first = start(true)) {
+        try (ConfigurableApplicationContext first =
+                start(true)) {
             leaveOutstandingPublication(
                     first.getBean(JdbcTemplate.class), sku);
         }
 
-        try (ConfigurableApplicationContext second = start(true)) {
-            JdbcTemplate jdbc = second.getBean(JdbcTemplate.class);
+        try (ConfigurableApplicationContext second =
+                start(true)) {
+            JdbcTemplate jdbc =
+                    second.getBean(JdbcTemplate.class);
 
             Awaitility.await()
                     .atMost(Duration.ofSeconds(10))
-                    .untilAsserted(() -> assertThat(
-                            quantityOf(jdbc, sku)).isEqualTo(9));
+                    .untilAsserted(() ->
+                            assertThat(quantityOf(jdbc, sku))
+                                    .isEqualTo(9));
         }
     }
     // #endregion

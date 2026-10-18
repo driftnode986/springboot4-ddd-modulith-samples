@@ -9,6 +9,5 @@ class ReserveStockService implements StockReservation {
     @Override
     public void reserve(String sku, int quantity) {
         // 在庫の引き当ては第9章で実装します。
-        // ここでは order から見える窓口が spi だけであることの確認に使います。
     }
 }

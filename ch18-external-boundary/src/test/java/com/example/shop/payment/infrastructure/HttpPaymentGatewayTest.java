@@ -29,7 +29,10 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 /**
  * 実際に HTTP を出して、相手の応答が支払いの語彙へ翻訳されることを確かめる。
  *
- * <p>相手役は WireMock が務める。決済代行会社に本当につなぐわけではないが、 通信そのものは本物なので、遅延や失敗をこちらから作れる。
+ * <p>相手役は WireMock が務める。
+ * 決済代行会社に本当につなぐわけではないが、
+ * 通信そのものは本物なので、
+ * 遅延や失敗をこちらから作れる。
  */
 // #region gateway-test-head
 @SpringBootTest
@@ -95,8 +98,8 @@ class HttpPaymentGatewayTest {
                         .withHeader("Content-Type",
                                 "application/json")
                         .withBody("""
-                                {"id":"ch_1","status":"succeeded"}
-                                """)));
+                            {"id":"ch_1","status":"succeeded"}
+                            """)));
 
         UUID orderId = UUID.randomUUID();
 
@@ -105,12 +108,14 @@ class HttpPaymentGatewayTest {
 
         // 相手が決めた項目名で送れていることも確かめておく。
         String expected = """
-                {"reference":"%s","amount":12000,"currency":"JPY"}
-                """.formatted(orderId);
-        wireMock.verify(postRequestedFor(urlEqualTo("/v1/charges"))
-                .withHeader("Content-Type",
-                        equalTo("application/json"))
-                .withRequestBody(equalToJson(expected)));
+            {"reference":"%s","amount":12000,"currency":"JPY"}
+            """.formatted(orderId);
+        wireMock.verify(
+                postRequestedFor(urlEqualTo("/v1/charges"))
+                        .withHeader("Content-Type",
+                                equalTo("application/json"))
+                        .withRequestBody(
+                                equalToJson(expected)));
     }
     // #endregion
 
@@ -125,8 +130,8 @@ class HttpPaymentGatewayTest {
                         .withHeader("Content-Type",
                                 "application/json")
                         .withBody("""
-                                {"id":"ch_2","status":"declined"}
-                                """)));
+                            {"id":"ch_2","status":"declined"}
+                            """)));
 
         assertThat(gateway.charge(UUID.randomUUID(), 12_000))
                 .isEqualTo(ChargeResult.DECLINED);
@@ -155,8 +160,8 @@ class HttpPaymentGatewayTest {
                         .withHeader("Content-Type",
                                 "application/json")
                         .withBody("""
-                                {"id":"ch_4","status":"succeeded"}
-                                """)
+                            {"id":"ch_4","status":"succeeded"}
+                            """)
                         // 待ち時間の上限より長く待たせる。
                         .withFixedDelay(2_000)));
 
@@ -175,8 +180,8 @@ class HttpPaymentGatewayTest {
                         .withHeader("Content-Type",
                                 "application/json")
                         .withBody("""
-                                {"id":"ch_3","status":"processing"}
-                                """)));
+                            {"id":"ch_3","status":"processing"}
+                            """)));
 
         assertThat(gateway.charge(UUID.randomUUID(), 12_000))
                 .isEqualTo(ChargeResult.UNKNOWN);

@@ -4,6 +4,7 @@ import com.example.shop.payment.spi.PaymentRequest;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
+// #region request-payment-service
 @Service
 class RequestPaymentService implements PaymentRequest {
 
@@ -12,3 +13,4 @@ class RequestPaymentService implements PaymentRequest {
         // 外部の決済サービスへの接続は第18章で実装します。
     }
 }
+// #endregion

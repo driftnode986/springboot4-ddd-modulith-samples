@@ -59,20 +59,20 @@ public class PlaceOrderService {
         orders.save(order);
 
         // 出荷は直接呼ぶ。注文と同じトランザクションで動く。
-        shipments.arrange(order.id().value(), command.address());
+        shipments.arrange(
+                order.id().value(), command.address());
 
         // 在庫はイベントで繋ぐ。受け取る相手をここでは知らない。
         // #region publish
-        events.publishEvent(
-                new OrderPlaced(
-                        UUID.randomUUID().toString(),
-                        order.id().value(),
-                        command.customerId(),
-                        command.lines().stream()
-                                .map(line -> new OrderPlaced.Item(
-                                        line.productId(),
-                                        line.quantity()))
-                                .toList()));
+        events.publishEvent(new OrderPlaced(
+                UUID.randomUUID().toString(),
+                order.id().value(),
+                command.customerId(),
+                command.lines().stream()
+                        .map(line -> new OrderPlaced.Item(
+                                line.productId(),
+                                line.quantity()))
+                        .toList()));
         // #endregion
 
         return order.id();

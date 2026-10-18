@@ -26,7 +26,8 @@ class OutstandingPublicationTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired private PlaceOrderService placeOrder;
     @Autowired private JdbcTemplate jdbc;
@@ -36,54 +37,68 @@ class OutstandingPublicationTest {
         jdbc.update("DELETE FROM event_publication");
     }
 
-    private PlaceOrderCommand command(String customerId, String productId) {
+    private PlaceOrderCommand command(
+            String customerId, String productId) {
         return new PlaceOrderCommand(
                 customerId,
                 "東京都千代田区1-1-1",
-                List.of(new PlaceOrderCommand.Line(productId, 1, 1500)));
+                List.of(new PlaceOrderCommand.Line(
+                        productId, 1, 1500)));
     }
 
     @Test
     @DisplayName("受け取る側が成功すると、完了の時刻が記録される")
     void publicationIsCompletedWhenListenerSucceeds() {
-        String sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
-        jdbc.update("INSERT INTO inventory.stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
+        String sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
+        jdbc.update(
+                "INSERT INTO inventory.stocks"
+                        + " (sku, quantity, version)"
+                        + " VALUES (?, ?, 0)",
+                sku,
+                10);
 
         placeOrder.place(command("CUS-REG-1", sku));
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
-                .untilAsserted(
-                        () ->
-                                assertThat(
-                                                jdbc.queryForObject(
-                                                        "SELECT count(*) FROM event_publication"
-                                                                + " WHERE completion_date IS NOT NULL",
-                                                        Integer.class))
-                                        .isEqualTo(1));
+                .untilAsserted(() -> assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM"
+                                        + " event_publication"
+                                        + " WHERE"
+                                        + " completion_date"
+                                        + " IS NOT NULL",
+                                Integer.class))
+                        .isEqualTo(1));
     }
 
     @Test
     @DisplayName("受け取る側が失敗すると、イベントは未完了のまま表に残る")
     void publicationStaysOutstandingWhenListenerFails() {
         // 在庫のない商品を注文する。受け取る側は引き当てに失敗する。
-        String missing = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        String missing = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
 
         placeOrder.place(command("CUS-REG-2", missing));
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(10))
-                .untilAsserted(
-                        () ->
-                                assertThat(
-                                                jdbc.queryForObject(
-                                                        "SELECT count(*) FROM event_publication"
-                                                                + " WHERE completion_date IS NULL",
-                                                        Integer.class))
-                                        .isEqualTo(1));
+                .untilAsserted(() -> assertThat(
+                        jdbc.queryForObject(
+                                "SELECT count(*) FROM"
+                                        + " event_publication"
+                                        + " WHERE"
+                                        + " completion_date"
+                                        + " IS NULL",
+                                Integer.class))
+                        .isEqualTo(1));
 
         jdbc.queryForList(
-                        "SELECT listener_id, event_type, status, serialized_event FROM event_publication")
-                .forEach(row -> System.out.println("OUTSTANDING=" + row));
+                        "SELECT listener_id, event_type,"
+                                + " status, serialized_event"
+                                + " FROM event_publication")
+                .forEach(row -> System.out.println(
+                        "OUTSTANDING=" + row));
     }
 }

@@ -49,7 +49,8 @@ class DuplicateDeliveryTest {
     // #region setup
     @BeforeEach
     void setUp() {
-        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
         jdbc.update(
                 "INSERT INTO stocks (sku, quantity, version)"
                         + " VALUES (?, ?, 0)",
@@ -64,7 +65,8 @@ class DuplicateDeliveryTest {
     @DisplayName("同じイベントを 2 回受け取っても、"
             + "在庫は 1 回しか減らない")
     void reservesOnlyOnceForTheSameEvent() {
-        OrderPlaced delivered = event(UUID.randomUUID().toString());
+        OrderPlaced delivered =
+                event(UUID.randomUUID().toString());
 
         listener.on(delivered);
         listener.on(delivered);

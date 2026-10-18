@@ -33,7 +33,8 @@ class OrderModuleTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired private PlaceOrderService placeOrder;
 
@@ -43,18 +44,24 @@ class OrderModuleTest {
     @Test
     @DisplayName("注文が成立すると、注文成立の事実が発行される")
     void publishesOrderPlaced(Scenario scenario) {
-        BDDMockito.given(shipments.arrange(BDDMockito.anyString(), BDDMockito.anyString()))
-                .willReturn(new ShipmentId(UUID.randomUUID().toString()));
+        BDDMockito.given(shipments.arrange(
+                        BDDMockito.anyString(),
+                        BDDMockito.anyString()))
+                .willReturn(new ShipmentId(
+                        UUID.randomUUID().toString()));
 
         PlaceOrderCommand command =
                 new PlaceOrderCommand(
                         "CUS-1",
                         "東京都千代田区1-1",
-                        List.of(new PlaceOrderCommand.Line("P-0001", 3, 1200L)));
+                        List.of(new PlaceOrderCommand.Line(
+                                "P-0001", 3, 1200L)));
 
         scenario.stimulate(() -> placeOrder.place(command))
                 .andWaitForEventOfType(OrderPlaced.class)
-                .matchingMappedValue(OrderPlaced::customerId, "CUS-1")
-                .toArriveAndVerify(event -> assertThat(event.items()).hasSize(1));
+                .matchingMappedValue(
+                        OrderPlaced::customerId, "CUS-1")
+                .toArriveAndVerify(event ->
+                        assertThat(event.items()).hasSize(1));
     }
 }

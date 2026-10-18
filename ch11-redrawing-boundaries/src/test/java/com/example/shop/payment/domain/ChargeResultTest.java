@@ -11,6 +11,8 @@ class ChargeResultTest {
     @DisplayName("請求の結果は、成立・与信不可・不明の3つだけ")
     void hasThreeOutcomes() {
         assertThat(ChargeResult.values()).containsExactly(
-                ChargeResult.SETTLED, ChargeResult.DECLINED, ChargeResult.UNKNOWN);
+                ChargeResult.SETTLED,
+                ChargeResult.DECLINED,
+                ChargeResult.UNKNOWN);
     }
 }

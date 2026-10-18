@@ -9,7 +9,10 @@ import org.springframework.web.client.RestClientException;
 /**
  * 決済代行会社の語彙を支払いの語彙へ翻訳する層。
  *
- * <p>相手が返す {@code "succeeded"} や HTTP の 500 は、この中で {@link ChargeResult} に置き換わる。 支払いの内側は、相手がどんな文字列を返すかを知らないままでいられる。
+ * <p>相手が返す {@code "succeeded"} や HTTP の 500 は、
+ * この中で {@link ChargeResult} に置き換わる。
+ * 支払いの内側は、相手がどんな文字列を返すかを
+ * 知らないままでいられる。
  */
 @Component
 class HttpPaymentGateway implements PaymentGateway {
@@ -25,7 +28,9 @@ class HttpPaymentGateway implements PaymentGateway {
     public ChargeResult charge(UUID orderId, long amountYen) {
         try {
             return translate(sender.send(
-                    idempotencyKeyFor(orderId), orderId, amountYen)
+                    idempotencyKeyFor(orderId),
+                    orderId,
+                    amountYen)
                     .status());
         } catch (RestClientException e) {
             // 送り直しても結果が確定しなかった。

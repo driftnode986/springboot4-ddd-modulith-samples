@@ -31,7 +31,8 @@ class InventoryModuleTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     @Autowired private StockRepository stocks;
     @Autowired private JdbcTemplate jdbc;
@@ -40,8 +41,12 @@ class InventoryModuleTest {
 
     @BeforeEach
     void setUp() {
-        sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
-        jdbc.update("INSERT INTO stocks (sku, quantity, version) VALUES (?, ?, 0)", sku, 10);
+        sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
+        jdbc.update(
+                "INSERT INTO stocks (sku, quantity, version)"
+                        + " VALUES (?, ?, 0)",
+                sku, 10);
     }
 
     // #region reserves-on-event

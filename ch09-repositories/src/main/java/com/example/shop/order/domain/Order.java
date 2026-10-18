@@ -81,12 +81,15 @@ public class Order {
     // #endregion
 
     /** 明細を追加する。上限を超える追加は受け付けない。 */
-    public void addLine(ProductId productId, Quantity quantity, Money unitPrice) {
-        OrderLine line = new OrderLine(productId, quantity, unitPrice);
+    public void addLine(ProductId productId, Quantity quantity,
+            Money unitPrice) {
+        OrderLine line =
+                new OrderLine(productId, quantity, unitPrice);
         Money next = total().plus(line.subtotal());
         if (next.amount().compareTo(LIMIT.amount()) > 0) {
             throw new IllegalStateException(
-                    "1 注文の上限を超えます: " + next.amount() + " > " + LIMIT.amount());
+                    "1 注文の上限を超えます: " + next.amount()
+                            + " > " + LIMIT.amount());
         }
         lines.add(line);
     }
@@ -121,7 +124,8 @@ public class Order {
         if (this == other) {
             return true;
         }
-        return other instanceof Order that && id.equals(that.id);
+        return other instanceof Order that
+                && id.equals(that.id);
     }
 
     @Override

@@ -20,56 +20,66 @@ import org.mockito.Mockito;
  */
 class WrongPropertyPrefixProbeTest {
 
-    private final WebApplicationContextRunner runner = new WebApplicationContextRunner()
+    private final WebApplicationContextRunner runner =
+            new WebApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
-                    WebMvcAutoConfiguration.class,
-                    HttpMessageConvertersAutoConfiguration.class,
-                    JacksonAutoConfiguration.class))
-            .withUserConfiguration(ControllerConfiguration.class);
+                WebMvcAutoConfiguration.class,
+                HttpMessageConvertersAutoConfiguration.class,
+                JacksonAutoConfiguration.class))
+            .withUserConfiguration(
+                ControllerConfiguration.class);
 
     @Test
     @DisplayName("正しい前置きなら版の解決が組み立てられる")
     void correctPrefixBuildsStrategy() {
         runner.withPropertyValues(
-                        "spring.mvc.apiversion.use.header=X-API-Version",
+                        "spring.mvc.apiversion.use.header="
+                                + "X-API-Version",
                         "spring.mvc.apiversion.required=true")
-                .run(context -> assertThat(context).hasNotFailed());
+                .run(context -> assertThat(context)
+                        .hasNotFailed());
     }
 
     @Test
     @DisplayName("前置きを間違えると、版の解決が組み立てられず起動に失敗する")
     void wrongPrefixFailsToStart() {
+        String expected = "API version specified, "
+                + "but no ApiVersionStrategy configured";
         runner.withPropertyValues(
-                        "spring.webflux.apiversion.use.header=X-API-Version",
-                        "spring.webflux.apiversion.required=true")
+                        "spring.webflux.apiversion.use.header="
+                                + "X-API-Version",
+                        "spring.webflux.apiversion"
+                                + ".required=true")
                 .run(context -> {
                     assertThat(context).hasFailed();
                     assertThat(context.getStartupFailure())
-                            .hasStackTraceContaining(
-                                    "API version specified, but no ApiVersionStrategy configured");
+                            .hasStackTraceContaining(expected);
                 });
     }
 
     @Test
     @DisplayName("版の設定を一部だけ書くと、取り出す手段がないため起動に失敗する")
     void partialConfigurationFailsToStart() {
-        runner.withPropertyValues("spring.mvc.apiversion.required=true")
+        String expected = "API version config customized, "
+                + "but no ApiVersionResolver provided";
+        runner.withPropertyValues(
+                        "spring.mvc.apiversion.required=true")
                 .run(context -> {
                     assertThat(context).hasFailed();
                     assertThat(context.getStartupFailure())
-                            .hasStackTraceContaining(
-                                    "API version config customized, but no ApiVersionResolver provided");
+                            .hasStackTraceContaining(expected);
                 });
     }
 
     @Test
     @DisplayName("版の設定を書かなければ、版を付けた対応づけ自体が成立しない")
     void noConfigurationRejectsVersionedMapping() {
+        String expected = "API version specified, "
+                + "but no ApiVersionStrategy configured";
         runner.run(context -> {
             assertThat(context).hasFailed();
             assertThat(context.getStartupFailure())
-                    .hasStackTraceContaining(
-                            "API version specified, but no ApiVersionStrategy configured");
+                    .hasStackTraceContaining(expected);
         });
     }
 
@@ -78,7 +88,8 @@ class WrongPropertyPrefixProbeTest {
 
         @Bean
         OrderController orderController() {
-            return new OrderController(Mockito.mock(PlaceOrderService.class));
+            return new OrderController(
+                    Mockito.mock(PlaceOrderService.class));
         }
     }
 }

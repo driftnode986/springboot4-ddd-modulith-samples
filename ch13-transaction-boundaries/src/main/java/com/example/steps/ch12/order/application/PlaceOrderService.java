@@ -17,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
  * 第12章までの注文の受け付け（第13章でイベントを足す前の版）。
  *
  * <p>第13章の本文が書き換える前の形を示すために残している。
- * 完成形は {@code com.example.shop.order.application.PlaceOrderService}。
+ * 完成形は
+ * {@code com.example.shop.order.application.PlaceOrderService}。
  * 部品スキャンの対象（com.example.shop）の外に置き、Bean にはしない。
  */
 public class PlaceOrderService {
@@ -56,7 +57,8 @@ public class PlaceOrderService {
         }
 
         orders.save(order);
-        shipments.arrange(order.id().value(), command.address());
+        shipments.arrange(
+                order.id().value(), command.address());
         return order.id();
     }
     // #endregion

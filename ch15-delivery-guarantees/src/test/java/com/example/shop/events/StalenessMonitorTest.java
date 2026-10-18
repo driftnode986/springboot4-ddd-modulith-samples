@@ -28,27 +28,38 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class StalenessMonitorTest {
 
     @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18");
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:18");
 
     private static final String LISTENER_ID =
-            "com.example.shop.inventory.application.ReserveStockOnOrderPlaced"
-                    + ".on(com.example.shop.order.spi.OrderPlaced)";
+            "com.example.shop.inventory.application"
+                    + ".ReserveStockOnOrderPlaced"
+                    + ".on(com.example.shop.order.spi"
+                    + ".OrderPlaced)";
 
-    private ConfigurableApplicationContext start(String... extraProperties) {
+    private ConfigurableApplicationContext start(
+            String... extraProperties) {
         String[] base = {
             "spring.datasource.url=" + postgres.getJdbcUrl(),
-            "spring.datasource.username=" + postgres.getUsername(),
-            "spring.datasource.password=" + postgres.getPassword(),
+            "spring.datasource.username="
+                    + postgres.getUsername(),
+            "spring.datasource.password="
+                    + postgres.getPassword(),
         };
-        String[] all = new String[base.length + extraProperties.length];
+        String[] all = new String[
+                base.length + extraProperties.length];
         System.arraycopy(base, 0, all, 0, base.length);
-        System.arraycopy(extraProperties, 0, all, base.length, extraProperties.length);
+        System.arraycopy(extraProperties, 0,
+                all, base.length, extraProperties.length);
 
-        return new SpringApplicationBuilder(ShopApplication.class)
+        return new SpringApplicationBuilder(
+                        ShopApplication.class)
                 .web(WebApplicationType.NONE)
                 .properties(all)
                 // 設定ファイルより優先させたいので、コマンドライン引数として渡す。
-                .run("--spring.modulith.events.republish-outstanding-events-on-restart=false");
+                .run("--spring.modulith.events"
+                        + ".republish-outstanding-events"
+                        + "-on-restart=false");
     }
 
     // #region leave-stale
@@ -59,14 +70,16 @@ class StalenessMonitorTest {
                 """
                 {"eventId":"%s","orderId":"%s",\
                 "customerId":"CUS-STALE",\
-                "items":[{"productId":"P-STALE","quantity":1}]}"""
+                "items":[{"productId":"P-STALE",\
+                "quantity":1}]}"""
                         .formatted(UUID.randomUUID(),
                                 UUID.randomUUID());
 
         jdbc.update(
                 """
                 INSERT INTO event_publication
-                  (id, listener_id, event_type, serialized_event,
+                  (id, listener_id, event_type,
+                   serialized_event,
                    publication_date, completion_date,
                    completion_attempts, status)
                 VALUES (?, ?, ?, ?, ?, NULL, 0, 'PUBLISHED')
@@ -75,8 +88,8 @@ class StalenessMonitorTest {
                 LISTENER_ID,
                 OrderPlaced.class.getName(),
                 serialized,
-                java.sql.Timestamp.from(
-                        Instant.now().minus(Duration.ofHours(1))));
+                java.sql.Timestamp.from(Instant.now()
+                        .minus(Duration.ofHours(1))));
     }
     // #endregion
 
@@ -94,14 +107,16 @@ class StalenessMonitorTest {
             + "詰まったイベントは発表済みのまま放置される")
     void stalePublicationIsLeftAloneWithoutConfiguration() {
         try (ConfigurableApplicationContext context = start()) {
-            JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+            JdbcTemplate jdbc =
+                    context.getBean(JdbcTemplate.class);
             leaveStalePublication(jdbc);
 
             Awaitility.await()
                     .during(Duration.ofSeconds(4))
                     .atMost(Duration.ofSeconds(8))
-                    .untilAsserted(() -> assertThat(statusOf(jdbc))
-                            .isEqualTo("PUBLISHED"));
+                    .untilAsserted(() ->
+                            assertThat(statusOf(jdbc))
+                                    .isEqualTo("PUBLISHED"));
         }
     }
     // #endregion
@@ -117,27 +132,35 @@ class StalenessMonitorTest {
                                 + ".published=1m",
                         "spring.modulith.events.staleness"
                                 + ".check-intervall=1s")) {
-            JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+            JdbcTemplate jdbc =
+                    context.getBean(JdbcTemplate.class);
             leaveStalePublication(jdbc);
 
             Awaitility.await()
                     .atMost(Duration.ofSeconds(15))
-                    .untilAsserted(() -> assertThat(statusOf(jdbc))
-                            .isEqualTo("FAILED"));
+                    .untilAsserted(() ->
+                            assertThat(statusOf(jdbc))
+                                    .isEqualTo("FAILED"));
         }
     }
     // #endregion
 
     @Test
-    @DisplayName("application-staleness.yml の設定でも、詰まったイベントが失敗として拾い上げられる")
+    @DisplayName("application-staleness.yml の設定でも、"
+            + "詰まったイベントが失敗として拾い上げられる")
     void stalenessProfileMarksStalePublicationFailed() {
-        try (ConfigurableApplicationContext context = start("spring.profiles.active=staleness")) {
-            JdbcTemplate jdbc = context.getBean(JdbcTemplate.class);
+        try (ConfigurableApplicationContext context =
+                start("spring.profiles.active=staleness")) {
+            JdbcTemplate jdbc =
+                    context.getBean(JdbcTemplate.class);
             leaveStalePublication(jdbc);
 
             Awaitility.await()
                     .atMost(Duration.ofSeconds(15))
-                    .untilAsserted(() -> assertThat(statusOf(jdbc)).isEqualTo("FAILED"));
+                    .untilAsserted(() ->
+                            assertThat(statusOf(jdbc))
+                                    .isEqualTo(
+                                    "FAILED"));
         }
     }
 }

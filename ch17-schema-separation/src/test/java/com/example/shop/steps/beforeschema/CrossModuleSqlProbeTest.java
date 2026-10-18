@@ -33,27 +33,32 @@ class CrossModuleSqlProbeTest {
     void setUp() {
         Flyway.configure()
                 .dataSource(postgres.getJdbcUrl(),
-                        postgres.getUsername(), postgres.getPassword())
+                        postgres.getUsername(),
+                        postgres.getPassword())
                 .locations("classpath:steps/beforeschema/db")
                 .load()
                 .migrate();
         jdbc = new JdbcTemplate(new DriverManagerDataSource(
                 postgres.getJdbcUrl(),
-                postgres.getUsername(), postgres.getPassword()));
+                postgres.getUsername(),
+                postgres.getPassword()));
 
-        String sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        String sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
         orderId = UUID.randomUUID().toString();
         jdbc.update(
                 "INSERT INTO stocks (sku, quantity, version)"
                         + " VALUES (?, ?, 0)",
                 sku, 10);
         jdbc.update(
-                "INSERT INTO orders (id, customer_id, state, version)"
+                "INSERT INTO orders"
+                        + " (id, customer_id, state, version)"
                         + " VALUES (?, ?, 'ACCEPTED', 0)",
                 orderId, "CUS-1");
         jdbc.update(
-                "INSERT INTO order_lines (order_id, product_id,"
-                        + " quantity, unit_amount, unit_currency)"
+                "INSERT INTO order_lines"
+                        + " (order_id, product_id, quantity,"
+                        + " unit_amount, unit_currency)"
                         + " VALUES (?, ?, 3, 1000, 'JPY')",
                 orderId, sku);
     }
@@ -67,8 +72,10 @@ class CrossModuleSqlProbeTest {
 
         Integer remaining = jdbc.queryForObject(
                 "SELECT s.quantity FROM orders o"
-                        + " JOIN order_lines l ON l.order_id = o.id"
-                        + " JOIN stocks s ON s.sku = l.product_id"
+                        + " JOIN order_lines l"
+                        + " ON l.order_id = o.id"
+                        + " JOIN stocks s"
+                        + " ON s.sku = l.product_id"
                         + " WHERE o.id = ?",
                 Integer.class,
                 orderId);

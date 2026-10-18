@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test;
  */
 class MoneyScaleProbeTest {
 
-    private static final Currency JPY = Currency.getInstance("JPY");
+    private static final Currency JPY =
+            Currency.getInstance("JPY");
 
     @Test
     @DisplayName("Money.yen だけを通っていれば合計は等しく比較できる")
@@ -29,7 +30,8 @@ class MoneyScaleProbeTest {
     @DisplayName("桁数の違う金額は、数値が同じでも等しくない")
     void scaleBreaksEquality() {
         Money plain = new Money(new BigDecimal("1500"), JPY);
-        Money scaled = new Money(new BigDecimal("1500.00"), JPY);
+        Money scaled =
+                new Money(new BigDecimal("1500.00"), JPY);
 
         assertThat(plain).isNotEqualTo(scaled);
         assertThat(plain.amount().compareTo(scaled.amount()))

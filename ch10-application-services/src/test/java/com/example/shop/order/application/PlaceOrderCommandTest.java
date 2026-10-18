@@ -14,7 +14,8 @@ class PlaceOrderCommandTest {
     void copiesLines() {
         List<PlaceOrderCommand.Line> lines = new ArrayList<>();
         lines.add(new PlaceOrderCommand.Line("P-001", 1, 100));
-        PlaceOrderCommand command = new PlaceOrderCommand("C-001", lines);
+        PlaceOrderCommand command =
+                new PlaceOrderCommand("C-001", lines);
 
         lines.add(new PlaceOrderCommand.Line("P-002", 1, 200));
 
@@ -24,6 +25,7 @@ class PlaceOrderCommandTest {
     @Test
     @DisplayName("明細が null なら空の一覧として受け取る")
     void nullLinesBecomeEmpty() {
-        assertThat(new PlaceOrderCommand("C-001", null).lines()).isEmpty();
+        assertThat(new PlaceOrderCommand("C-001", null).lines())
+                .isEmpty();
     }
 }

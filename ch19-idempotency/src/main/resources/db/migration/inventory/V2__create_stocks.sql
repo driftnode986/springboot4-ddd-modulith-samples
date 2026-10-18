@@ -7,10 +7,9 @@ CREATE TABLE inventory.stocks (
     CONSTRAINT pk_stocks PRIMARY KEY (sku)
 );
 
--- 受け取り済みのイベントを記録する。主キーがそのまま二重処理の防波堤になる。
 CREATE TABLE inventory.handled_events (
-    event_id   VARCHAR(64) NOT NULL,
+    event_id   VARCHAR(64)  NOT NULL,
     handler    VARCHAR(120) NOT NULL,
-    handled_at TIMESTAMPTZ NOT NULL,
+    handled_at TIMESTAMPTZ  NOT NULL,
     CONSTRAINT pk_handled_events PRIMARY KEY (event_id, handler)
 );

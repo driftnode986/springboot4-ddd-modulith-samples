@@ -13,7 +13,8 @@ class CustomerIdTest {
     @Test
     @DisplayName("値があれば生成できる")
     void 値があれば生成できる() {
-        assertThat(new CustomerId("C-1").value()).isEqualTo("C-1");
+        assertThat(new CustomerId("C-1").value())
+                .isEqualTo("C-1");
     }
 
     // #region blank

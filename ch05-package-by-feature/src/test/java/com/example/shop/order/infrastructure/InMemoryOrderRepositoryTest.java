@@ -17,7 +17,9 @@ class InMemoryOrderRepositoryTest {
 
         repository.save(order);
 
-        assertThat(repository.findById(order.id())).containsSame(order);
-        assertThat(repository.findById(UUID.randomUUID())).isEmpty();
+        assertThat(repository.findById(order.id()))
+                .containsSame(order);
+        assertThat(repository.findById(UUID.randomUUID()))
+                .isEmpty();
     }
 }

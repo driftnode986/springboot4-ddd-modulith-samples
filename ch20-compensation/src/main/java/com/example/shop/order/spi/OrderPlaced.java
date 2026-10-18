@@ -10,7 +10,12 @@ import java.util.List;
  *
  * <p>明細は、受け取る側が必要とする分だけを載せる。注文集約そのものは渡さない。
  */
-public record OrderPlaced(String eventId, String orderId, String customerId, List<Item> items) {
+// #region order-placed
+public record OrderPlaced(
+        String eventId,
+        String orderId,
+        String customerId,
+        List<Item> items) {
 
     public OrderPlaced {
         items = List.copyOf(items);
@@ -20,3 +25,4 @@ public record OrderPlaced(String eventId, String orderId, String customerId, Lis
     public record Item(String productId, int quantity) {
     }
 }
+// #endregion

@@ -11,7 +11,8 @@ import org.springframework.modulith.core.ApplicationModules;
  */
 class ModularityTests {
 
-    static final ApplicationModules modules = ApplicationModules.of(ShopApplication.class);
+    static final ApplicationModules modules =
+            ApplicationModules.of(ShopApplication.class);
 
     @Test
     @Disabled("既知の違反を1件持っているため。第12章「既存のプロジェクトに後から入れる」を参照")

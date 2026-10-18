@@ -77,7 +77,8 @@ class CompensationScenarioTest {
         return new PlaceOrderCommand(
                 "CUS-1",
                 "東京都千代田区1-1",
-                List.of(new PlaceOrderCommand.Line(sku, 3, 1200L)));
+                List.of(new PlaceOrderCommand.Line(
+                        sku, 3, 1200L)));
     }
     // #endregion
 
@@ -100,7 +101,8 @@ class CompensationScenarioTest {
     // #endregion
 
     // #region scenario-release
-        scenario.stimulate(() -> placeOrder.requestPayment(orderId))
+        scenario.stimulate(() ->
+                        placeOrder.requestPayment(orderId))
                 .andWaitForEventOfType(PaymentFailed.class)
                 .toArriveAndVerify(event ->
                         assertThat(event.items())

@@ -35,10 +35,12 @@ class CrossModuleSqlProbeTest {
 
     @BeforeEach
     void setUp() {
-        String sku = "P-" + UUID.randomUUID().toString().substring(0, 8);
+        String sku = "P-"
+                + UUID.randomUUID().toString().substring(0, 8);
         orderId = UUID.randomUUID().toString();
         jdbc.update(
-                "INSERT INTO inventory.stocks (sku, quantity, version)"
+                "INSERT INTO inventory.stocks"
+                        + " (sku, quantity, version)"
                         + " VALUES (?, ?, 0)",
                 sku, 10);
         jdbc.update(
@@ -47,8 +49,9 @@ class CrossModuleSqlProbeTest {
                         + " VALUES (?, ?, 'ACCEPTED', 0)",
                 orderId, "CUS-1");
         jdbc.update(
-                "INSERT INTO ordering.order_lines (order_id, product_id,"
-                        + " quantity, unit_amount, unit_currency)"
+                "INSERT INTO ordering.order_lines"
+                        + " (order_id, product_id, quantity,"
+                        + " unit_amount, unit_currency)"
                         + " VALUES (?, ?, 3, 1000, 'JPY')",
                 orderId, sku);
     }
@@ -60,8 +63,10 @@ class CrossModuleSqlProbeTest {
         Integer remaining = jdbc.queryForObject(
                 // #region joined-sql
                 "SELECT s.quantity FROM ordering.orders o"
-                        + " JOIN ordering.order_lines l ON l.order_id = o.id"
-                        + " JOIN inventory.stocks s ON s.sku = l.product_id"
+                        + " JOIN ordering.order_lines l"
+                        + " ON l.order_id = o.id"
+                        + " JOIN inventory.stocks s"
+                        + " ON s.sku = l.product_id"
                 // #endregion
                         + " WHERE o.id = ?",
                 Integer.class,

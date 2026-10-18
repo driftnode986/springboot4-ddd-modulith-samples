@@ -16,19 +16,23 @@ class StalenessProfileTest {
     @Test
     @DisplayName("application-staleness.yml は配り直しと見張りを有効にする")
     void enablesRepublishAndStaleness() throws IOException {
-        List<PropertySource<?>> sources = new YamlPropertySourceLoader()
-                .load("staleness",
-                        new ClassPathResource("application-staleness.yml"));
+        List<PropertySource<?>> sources =
+                new YamlPropertySourceLoader().load(
+                        "staleness",
+                        new ClassPathResource(
+                                "application-staleness.yml"));
         PropertySource<?> yaml = sources.get(0);
 
         assertThat(yaml.getProperty(
-                "spring.modulith.events.republish-outstanding-events-on-restart"))
+                "spring.modulith.events.republish-"
+                        + "outstanding-events-on-restart"))
                 .isEqualTo(true);
         assertThat(yaml.getProperty(
                 "spring.modulith.events.staleness.published"))
                 .isEqualTo("1m");
         assertThat(yaml.getProperty(
-                "spring.modulith.events.staleness.check-intervall"))
+                "spring.modulith.events.staleness."
+                        + "check-intervall"))
                 .isEqualTo("1s");
     }
 }

@@ -67,8 +67,8 @@ class ApiVersionTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertThat(result
                         .getResponse().getErrorMessage())
-                        .isEqualTo(
-                                "Invalid API version: '9.0.0'."));
+                        .isEqualTo("Invalid API version: "
+                                + "'9.0.0'."));
     }
     // #endregion
 
