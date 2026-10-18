@@ -29,7 +29,8 @@ ext {
 
 // #region boot-deps
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation(
+        'org.springframework.boot:spring-boot-starter-data-jpa')
     // #region flyway
     implementation 'org.springframework.boot:spring-boot-flyway'
     implementation 'org.flywaydb:flyway-core'
@@ -37,7 +38,8 @@ dependencies {
     // #endregion
     runtimeOnly 'org.postgresql:postgresql'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation(
+        'org.springframework.boot:spring-boot-starter-test')
     // #region testcontainers
     testImplementation(
         'org.springframework.boot:spring-boot-testcontainers')
