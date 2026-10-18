@@ -52,6 +52,7 @@ class OrderModuleTest {
                         UUID.randomUUID().toString()));
         // #endregion
 
+        // #region place-and-verify
         PlaceOrderCommand command =
                 new PlaceOrderCommand(
                         "CUS-1",
@@ -65,5 +66,6 @@ class OrderModuleTest {
                         OrderPlaced::customerId, "CUS-1")
                 .toArriveAndVerify(event ->
                         assertThat(event.items()).hasSize(1));
+        // #endregion
     }
 }

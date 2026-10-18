@@ -21,6 +21,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  *
  * <p>発行は見えるが、受け取る側が終わったかどうかは見えない。
  */
+// #region naive-head
 @SpringBootTest
 @Testcontainers(disabledWithoutDocker = true)
 class NaiveEventTest {
@@ -33,7 +34,9 @@ class NaiveEventTest {
     @Autowired private PlaceOrderService placeOrder;
     @Autowired private StockRepository stocks;
     @Autowired private JdbcTemplate jdbc;
+    // #endregion
 
+    // #region naive-setup
     private String sku;
 
     @BeforeEach
@@ -53,6 +56,7 @@ class NaiveEventTest {
                 List.of(new PlaceOrderCommand.Line(
                         sku, 3, 1200L)));
     }
+    // #endregion
 
     // #region cannot-see
     @Test
