@@ -79,8 +79,10 @@ class IdempotentChargeTest {
         wireMock.resetAll();
     }
 
+    // #region same-key
     @Test
-    @DisplayName("同じ注文を二度請求しても、相手には同じ冪等キーが届く")
+    @DisplayName("同じ注文を二度請求しても、"
+            + "相手には同じ冪等キーが届く")
     void sendsSameKeyForSameOrder() {
         wireMock.stubFor(post(urlEqualTo("/v1/charges"))
                 .willReturn(aResponse()
@@ -95,14 +97,17 @@ class IdempotentChargeTest {
         gateway.charge(orderId, 12_000);
         gateway.charge(orderId, 12_000);
 
-        // 2 回とも同じキーで届いていること。相手はこれを見て 1 回分と判断できる。
+        // 2 回とも同じキーで届いていること。
+        // 相手はこれを見て 1 回分と判断できる。
         wireMock.verify(
                 2,
                 postRequestedFor(urlEqualTo("/v1/charges"))
                         .withHeader("Idempotency-Key",
                                 equalTo(orderId.toString())));
     }
+    // #endregion
 
+    // #region different-keys
     @Test
     @DisplayName("注文が違えば、冪等キーも違う")
     void sendsDifferentKeysForDifferentOrders() {
@@ -131,6 +136,7 @@ class IdempotentChargeTest {
                         .withHeader("Idempotency-Key",
                                 equalTo(second.toString())));
     }
+    // #endregion
 
     // #region lost-first
     @Test

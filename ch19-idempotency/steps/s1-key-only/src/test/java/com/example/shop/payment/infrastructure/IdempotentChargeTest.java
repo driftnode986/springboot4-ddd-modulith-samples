@@ -78,7 +78,8 @@ class IdempotentChargeTest {
     }
 
     @Test
-    @DisplayName("同じ注文を二度請求しても、相手には同じ冪等キーが届く")
+    @DisplayName("同じ注文を二度請求しても、"
+            + "相手には同じ冪等キーが届く")
     void sendsSameKeyForSameOrder() {
         wireMock.stubFor(post(urlEqualTo("/v1/charges"))
                 .willReturn(aResponse()
@@ -93,7 +94,8 @@ class IdempotentChargeTest {
         gateway.charge(orderId, 12_000);
         gateway.charge(orderId, 12_000);
 
-        // 2 回とも同じキーで届いていること。相手はこれを見て 1 回分と判断できる。
+        // 2 回とも同じキーで届いていること。
+        // 相手はこれを見て 1 回分と判断できる。
         wireMock.verify(
                 2,
                 postRequestedFor(urlEqualTo("/v1/charges"))
